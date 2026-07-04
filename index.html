@@ -568,11 +568,109 @@
                 gap: 20px;
             }
         }
+
+        /* PWAインストール誘導バナー */
+        .pwa-banner {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: white;
+            padding: 14px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 15px -3px rgba(2, 132, 199, 0.2);
+            animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .pwa-banner-content {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+        }
+        .pwa-icon {
+            font-size: 1.8rem;
+        }
+        .pwa-text {
+            flex-grow: 1;
+            line-height: 1.4;
+            text-align: left;
+        }
+        .pwa-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            font-family: var(--font-family);
+        }
+        .pwa-desc {
+            font-size: 0.8rem;
+            opacity: 0.95;
+        }
+        .pwa-btn {
+            background-color: white;
+            color: #0284c7;
+            border: none;
+            padding: 8px 16px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            white-space: nowrap;
+        }
+        .pwa-btn:hover {
+            background-color: #f0f9ff;
+        }
+        .pwa-btn:active {
+            transform: scale(0.95);
+        }
+        .pwa-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+            padding: 0 4px;
+            line-height: 1;
+        }
+        .pwa-close:hover {
+            opacity: 1;
+        }
+        @media (max-width: 600px) {
+            .pwa-banner-content {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            .pwa-icon {
+                display: none;
+            }
+            .pwa-close {
+                position: absolute;
+                top: -6px;
+                right: -6px;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <!-- PWAインストール誘導バナー -->
+    <div id="pwa-install-banner" class="pwa-banner" style="display: none;">
+        <div class="pwa-banner-content">
+            <span class="pwa-icon">📱</span>
+            <div class="pwa-text">
+                <div class="pwa-title">「ときわ苑SS」アプリをホーム画面に追加</div>
+                <div id="pwa-guide-desc" class="pwa-desc">ホーム画面からワンタップで予定表を開けるようになります。</div>
+            </div>
+            <button type="button" id="pwa-install-btn" class="pwa-btn">アプリを追加</button>
+            <button type="button" class="pwa-close" onclick="closePwaBanner()">&times;</button>
+        </div>
+    </div>
+
     <header>
         <div class="facility-header-tag">特別養護老人ホーム ときわ苑</div>
         <h1 id="facility-name">ショートステイ 空き状況カレンダー</h1>
@@ -691,6 +789,74 @@
                 .then(reg => console.log('Service Worker registered', reg))
                 .catch(err => console.error('Service Worker registration failed', err));
         });
+    }
+
+    // PWAインストールイベントの捕捉とバナー表示制御
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // 標準のインストールダイアログの表示を防ぐ
+        e.preventDefault();
+        // イベントを保存
+        deferredPrompt = e;
+        // インストールバナーを表示
+        const banner = document.getElementById('pwa-install-banner');
+        if (banner) {
+            document.getElementById('pwa-guide-desc').textContent = "ホーム画面にアイコンを追加して、次回からワンタップで開けます。";
+            banner.style.display = 'block';
+        }
+    });
+
+    // iOS (Safari) 用のインストール誘導（iOSはbeforeinstallprompt非対応のため手動で案内を表示）
+    window.addEventListener('DOMContentLoaded', () => {
+        const ua = navigator.userAgent.toLowerCase();
+        const isIOS = /iphone|ipad|ipod/i.test(ua);
+        const isSafari = ua.includes('safari') && !ua.includes('chrome') && !ua.includes('crios') && !ua.includes('fxios');
+        
+        // すでにスタンドアロン（ホーム画面から起動）モードでない場合
+        const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+
+        if (isIOS && isSafari && !isStandalone) {
+            const banner = document.getElementById('pwa-install-banner');
+            if (banner) {
+                // iOS用の案内テキストに変更
+                document.getElementById('pwa-guide-desc').innerHTML = 
+                    'iPhoneをご利用の方は、<strong>画面下の共有ボタン（<span style="font-size:1.1rem; font-weight:normal; vertical-align:middle;">⎋</span>）</strong>を押し、<strong>「ホーム画面に追加」</strong>を選択してください。';
+                // iOSはWebから直接インストール不可のためボタンを隠す
+                document.getElementById('pwa-install-btn').style.display = 'none';
+                banner.style.display = 'block';
+            }
+        }
+    });
+
+    // インストールボタンが押された時の処理（Android / PC Chrome等）
+    window.addEventListener('DOMContentLoaded', () => {
+        const installBtn = document.getElementById('pwa-install-btn');
+        if (installBtn) {
+            installBtn.addEventListener('click', async () => {
+                if (!deferredPrompt) return;
+                // 保存しておいたインストールプロンプトを表示
+                deferredPrompt.prompt();
+                // ユーザーの回答を待つ
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response to the install prompt: ${outcome}`);
+                // イベントをクリア
+                deferredPrompt = null;
+                // バナーを隠す
+                closePwaBanner();
+            });
+        }
+    });
+
+    // インストール完了時のイベント
+    window.addEventListener('appinstalled', (evt) => {
+        console.log('ときわ苑SS が正常にインストールされました。');
+        closePwaBanner();
+    });
+
+    // バナーを閉じる処理
+    function closePwaBanner() {
+        const banner = document.getElementById('pwa-install-banner');
+        if (banner) banner.style.display = 'none';
     }
 
     /************************************************************
