@@ -735,27 +735,7 @@
         <!-- JSで動的にカレンダーが挿入されます -->
     </div>
 
-    <!-- 【施設管理用】設定パネル（暗証番号保護） -->
-    <button type="button" id="admin-trigger-btn" class="admin-trigger" onclick="toggleAdminPanel()">
-        ⚙ 管理者設定
-    </button>
-    <div id="admin-panel" class="admin-panel">
-        <div class="admin-title">施設管理用設定</div>
-        
-        <div class="admin-row" style="display: flex; flex-direction: column; gap: 16px;">
-            <!-- 入院枠の定員設定 -->
-            <div class="admin-control-group" style="width: 100%;">
-                <label for="hospital-limit">入院枠（特養併設）追加受入可能数</label>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <input type="number" id="hospital-limit" class="form-control" style="width: 100px; padding: 10px; background-color: #f1f5f9; cursor: not-allowed;" min="0" value="3" disabled>
-                    <span style="font-weight: 600; color: #475569;">名まで追加受け入れ可能</span>
-                </div>
-                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 4px;">
-                    ※この値はPCフォルダ内の「設定.txt」の数値を書き換えて保存することで自動更新され、ネット上に公開されます。
-                </span>
-            </div>
-        </div>
-    </div>
+
 </div>
 
 <!-- 仮予約モーダル -->
@@ -900,7 +880,7 @@
 
     // デフォルトの設定（データに記載がない日付の初期値）
     const DEFAULT_REGULAR_LIMIT = 8;     // 通常枠の最大数
-    const DEFAULT_HOSPITAL_LIMIT = 5;     // 入院枠の追加可能人数のデフォルト値
+    const DEFAULT_HOSPITAL_LIMIT = 1;     // 入院枠の追加可能人数のデフォルト値
 
     // LocalStorageのキー
     const STORAGE_KEY = "shortstay_vacancy_data_v2";
@@ -1117,44 +1097,16 @@
         document.title = FACILITY_NAME;
         document.getElementById('facility-name').textContent = FACILITY_NAME;
 
-        // 設定の読み込み
-        loadSettings();
-
         // 当月と翌月のカレンダーを描画
         const today = new Date();
         renderCalendars(today);
     });
 
     /**
-     * LocalStorageから設定を読み込む
-     */
-    function loadSettings() {
-        const storedLimit = localStorage.getItem(STORAGE_HOSPITAL_LIMIT_KEY);
-        if (storedLimit !== null) {
-            document.getElementById('hospital-limit').value = parseInt(storedLimit, 10);
-        } else {
-            document.getElementById('hospital-limit').value = DEFAULT_HOSPITAL_LIMIT;
-        }
-    }
-
-    /**
      * 入院枠の追加上限数を取得する
      */
     function getHospitalLimit() {
-        const limitVal = parseInt(document.getElementById('hospital-limit').value, 10);
-        return isNaN(limitVal) ? DEFAULT_HOSPITAL_LIMIT : limitVal;
-    }
-
-    /**
-     * 入院枠追加上限数の更新処理
-     */
-    function updateHospitalLimit(value) {
-        const limit = parseInt(value, 10);
-        if (isNaN(limit) || limit < 0) return;
-        localStorage.setItem(STORAGE_HOSPITAL_LIMIT_KEY, String(limit));
-        
-        // カレンダー再描画
-        renderCalendars(new Date());
+        return DEFAULT_HOSPITAL_LIMIT;
     }
 
 
@@ -1307,42 +1259,7 @@
     }
 
 
-    /************************************************************
-     * 4. 【施設管理用】設定パネル表示
-     ************************************************************/
 
-    // 認証フラグの保持
-    let isAdminAuthorized = false;
-
-    /**
-     * 管理員用パネルの開閉トグル（暗証番号認証）
-     */
-    function toggleAdminPanel() {
-        const panel = document.getElementById('admin-panel');
-        
-        // 既にパネルが開いている場合は単に閉じる
-        if (panel.classList.contains('show')) {
-            panel.classList.remove('show');
-            return;
-        }
-
-        // 未認証の場合のみ暗証番号を求める
-        if (!isAdminAuthorized) {
-            const password = prompt("施設管理用の暗証番号を入力してください：");
-            if (password === "tokiwa8899") {
-                isAdminAuthorized = true;
-            } else {
-                if (password !== null) { // キャンセルクリック時以外にエラー表示
-                    alert("暗証番号が正しくありません。");
-                }
-                return;
-            }
-        }
-
-        // 認証成功でパネルを展開
-        panel.classList.add('show');
-
-    }
                     /**
      * モーダルを表示する
      */
