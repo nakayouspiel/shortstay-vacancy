@@ -600,24 +600,6 @@
                     <span style="font-weight: 600; color: #475569;">名まで追加受け入れ可能</span>
                 </div>
             </div>
-
-            <!-- ショートメール(SMS)送信先設定 -->
-            <div class="admin-control-group" style="width: 100%;">
-                <label for="sms-to-number">仮予約の通知を受け取る携帯電話番号（スマホ用）</label>
-                <input type="tel" id="sms-to-number" class="form-control" style="width: 100%; padding: 10px; max-width: 250px;" placeholder="例：09012345678" onchange="updateSmsTo(this.value)">
-                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 4px;">
-                    ※ケアマネジャーがスマホで操作している場合、この番号宛てに「ショートメール(SMS)」が自動作成されます。（ハイフンなし）
-                </span>
-            </div>
-
-            <!-- メール(Email)送信先設定 -->
-            <div class="admin-control-group" style="width: 100%;">
-                <label for="email-to-address">仮予約の通知を受け取るメールアドレス（PC用）</label>
-                <input type="email" id="email-to-address" class="form-control" style="width: 100%; padding: 10px; max-width: 350px;" placeholder="例：info@example.com" onchange="updateEmailTo(this.value)">
-                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 4px;">
-                    ※ケアマネジャーがPCで操作している場合、このアドレス宛てに「仮予約メール(Outlook等起動)」が自動作成されます。
-                </span>
-            </div>
         </div>
     </div>
 </div>
@@ -701,12 +683,9 @@
     // LocalStorageのキー
     const STORAGE_KEY = "shortstay_vacancy_data_v2";
     const STORAGE_HOSPITAL_LIMIT_KEY = "shortstay_hospital_limit";
-    const STORAGE_SMS_TO_KEY = "shortstay_sms_to_number";
-    const STORAGE_EMAIL_TO_KEY = "shortstay_email_to_address";
 
-    // 通知先設定（SMSとEmail）
-    let activeSmsTo = "";
-    let activeEmailTo = "info@example.com"; // 初期フォールバックアドレス
+    // 仮予約通知先の固定携帯電話番号（ショートメール送信用）
+    const SMS_TO_NUMBER = "08064932831";
 
     // === PYTHON_AUTO_REPLACE_START ===
     let AVAILABILITY_DATA = {
@@ -934,38 +913,6 @@
         } else {
             document.getElementById('hospital-limit').value = DEFAULT_HOSPITAL_LIMIT;
         }
-
-        // SMS送信先電話番号の読み込み
-        const storedSmsTo = localStorage.getItem(STORAGE_SMS_TO_KEY);
-        if (storedSmsTo !== null) {
-            activeSmsTo = storedSmsTo;
-            document.getElementById('sms-to-number').value = storedSmsTo;
-        }
-
-        // メール送信先アドレスの読み込み
-        const storedEmailTo = localStorage.getItem(STORAGE_EMAIL_TO_KEY);
-        if (storedEmailTo !== null) {
-            activeEmailTo = storedEmailTo;
-            document.getElementById('email-to-address').value = storedEmailTo;
-        }
-    }
-
-    /**
-     * SMS送信先携帯電話番号の更新処理
-     */
-    function updateSmsTo(value) {
-        const num = value.trim().replace(/[^0-9]/g, ''); // 数字のみを抽出
-        localStorage.setItem(STORAGE_SMS_TO_KEY, num);
-        activeSmsTo = num;
-    }
-
-    /**
-     * メール送信先アドレスの更新処理
-     */
-    function updateEmailTo(value) {
-        const email = value.trim();
-        localStorage.setItem(STORAGE_EMAIL_TO_KEY, email);
-        activeEmailTo = email;
     }
 
     /**
@@ -1519,16 +1466,10 @@
     }
 
     /**
-     * フォーム送信処理（ショートメール(SMS)の自動作成・起動）
+     * フォーム送信処理（固定番号宛てのショートメール(SMS)を自動作成・起動）
      */
     function handleFormSubmit(event) {
         event.preventDefault();
-
-        // 携帯番号が未設定の場合はアラート
-        if (!activeSmsTo) {
-            alert("仮予約を送信するための『施設の携帯電話番号』が設定されていません。\n\n画面右下の「⚙ 管理者設定」ボタンを押し、暗証番号(tokiwa8899)を入力して、通知を受け取る携帯電話番号を設定してください。");
-            return;
-        }
 
         const officeName = document.getElementById('office-name').value.trim();
         const cmName = document.getElementById('cm-name').value.trim();
@@ -1565,10 +1506,10 @@
         
         if (ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1) {
             // iOS: 区切り文字が &
-            smsUrl = `sms:${activeSmsTo}&body=${encodeURIComponent(smsBody)}`;
+            smsUrl = `sms:${SMS_TO_NUMBER}&body=${encodeURIComponent(smsBody)}`;
         } else {
             // Androidやその他: 区切り文字が ?
-            smsUrl = `sms:${activeSmsTo}?body=${encodeURIComponent(smsBody)}`;
+            smsUrl = `sms:${SMS_TO_NUMBER}?body=${encodeURIComponent(smsBody)}`;
         }
 
         // メッセージアプリを起動
