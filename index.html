@@ -246,9 +246,10 @@
         .btn-status {
             width: 100%;
             display: flex;
+            flex-direction: column; /* 上下に配置する */
             align-items: center;
             justify-content: center;
-            padding: 10px 6px;
+            padding: 6px 2px;
             border: 1px solid transparent;
             border-radius: 8px;
             font-size: 0.85rem;
@@ -256,7 +257,20 @@
             text-align: center;
             cursor: pointer;
             transition: all 0.2s ease;
-            min-height: 44px; /* モバイルのタッチターゲット基準 */
+            min-height: 48px; /* モバイルのタッチターゲット基準 */
+            gap: 2px;
+        }
+
+        .status-symbol {
+            font-size: 1.1rem; /* 記号を大きく太く */
+            line-height: 1;
+        }
+
+        .status-subtext {
+            font-size: 0.65rem; /* ステータスや残数を極小にして収める */
+            font-weight: 500;
+            opacity: 0.85;
+            white-space: nowrap;
         }
 
         /* ボタン状態別スタイル */
@@ -663,10 +677,10 @@
         <div class="pwa-banner-content">
             <span class="pwa-icon">📱</span>
             <div class="pwa-text">
-                <div class="pwa-title">「ときわ苑SS」アプリをホーム画面に追加</div>
-                <div id="pwa-guide-desc" class="pwa-desc">ホーム画面からワンタップで予定表を開けるようになります。</div>
+                <div class="pwa-title">「ときわ苑SS」をホーム画面に追加</div>
+                <div id="pwa-guide-desc" class="pwa-desc">ワンタップで予定表をすぐに開けます。</div>
             </div>
-            <button type="button" id="pwa-install-btn" class="pwa-btn">アプリを追加</button>
+            <button type="button" id="pwa-install-btn" class="pwa-btn">追加する</button>
             <button type="button" class="pwa-close" onclick="closePwaBanner()">&times;</button>
         </div>
     </div>
@@ -774,8 +788,8 @@
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-cancel" onclick="closeModal()">キャンセル</button>
-                <button type="submit" class="btn btn-submit">登録</button>
+                <button type="button" class="btn btn-cancel" onclick="closeModal()">閉じる</button>
+                <button type="submit" class="btn btn-submit">ショートメールを作成 📱</button>
             </div>
         </form>
     </div>
@@ -1210,7 +1224,7 @@
             const statusBtn = document.createElement('button');
             statusBtn.type = 'button';
             statusBtn.className = `btn-status ${statusInfo.status}`;
-            statusBtn.textContent = statusInfo.text;
+            statusBtn.innerHTML = `<span class="status-symbol">${statusInfo.symbol}</span><span class="status-subtext">${statusInfo.subtext}</span>`;
             
             if (statusInfo.status !== 'ng') {
                 statusBtn.onclick = () => openModal(cellDateStr, statusInfo.type);
@@ -1249,7 +1263,8 @@
         if (regularVal > 0) {
             return {
                 status: 'ok',
-                text: `〇 残り${regularVal}床`,
+                symbol: '〇',
+                subtext: `残${regularVal}`,
                 type: '通常'
             };
         } 
@@ -1257,7 +1272,8 @@
         else if (regularVal <= 0 && regularVal > -hospitalLimit) {
             return {
                 status: 'warn',
-                text: `△ 要相談`,
+                symbol: '△',
+                subtext: '要相談',
                 type: '要相談'
             };
         } 
@@ -1265,7 +1281,8 @@
         else {
             return {
                 status: 'ng',
-                text: `✕ 満床`,
+                symbol: '✕',
+                subtext: '満床',
                 type: ''
             };
         }
