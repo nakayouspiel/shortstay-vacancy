@@ -581,6 +581,21 @@
                 align-items: stretch;
                 gap: 20px;
             }
+
+            /* モーダルボタンのスマホ向け1行化 */
+            .modal-footer {
+                display: flex;
+                flex-direction: row; /* 横並び固定 */
+                gap: 8px;
+                width: 100%;
+            }
+            .modal-footer .btn {
+                flex: 1; /* 幅を均等にする */
+                padding: 10px 6px; /* 余白を削り1行に収める */
+                font-size: 0.85rem; /* 文字サイズを下げて1行に収める */
+                white-space: nowrap; /* テキスト改行を防ぐ */
+                text-align: center;
+            }
         }
 
         /* PWAインストール誘導バナー */
@@ -792,7 +807,7 @@
 
             <div class="modal-footer">
                 <button type="button" class="btn btn-cancel" onclick="closeModal()">閉じる</button>
-                <button type="submit" class="btn btn-submit">ショートメールを作成 📱</button>
+                <button type="submit" class="btn btn-submit">ショートメール作成</button>
             </div>
         </form>
     </div>
