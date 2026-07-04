@@ -78,7 +78,7 @@ def parse_excel():
             print(f"シート名に「{current_sheet_name}」または「{next_sheet_name}」を含むシートが見つかりませんでした。")
             return False
             
-        # 既存のJSONデータをロードしてマージするための準備（別の日付データを上書きしないようにする）
+        # 既存 of the JSONデータをロードしてマージするための準備（別の日付データを上書きしないようにする）
         availability_data = {}
         if os.path.exists(JSON_FILE):
             try:
@@ -88,8 +88,31 @@ def parse_excel():
                 pass
                 
         updated_count = 0
-        
+        hospital_limit_val = 3 # デフォルトの追加受入可能数
+
+        # 1. 「短期原本」シートの BE1 セル (1行目 57列目) から直接数値を読み取る
+        if "短期原本" in wb.sheetnames:
+            orig_sheet = wb["短期原本"]
+            be1_val = orig_sheet.cell(row=1, column=57).value
+            if be1_val is not None:
+                try:
+                    hospital_limit_val = int(be1_val)
+                    print(f"「短期原本」シートの BE1 セルから入院枠上限を検出: {hospital_limit_val}名")
+                except ValueError:
+                    pass
+
         for sheet in target_sheets:
+            # 短期原本に数値がセットされていなかった場合のみ、各月シートの BE1 からフォールバック取得
+            if hospital_limit_val == 3:
+                be1_val = sheet.cell(row=1, column=57).value
+                if be1_val is not None:
+                    try:
+                        hospital_limit_val = int(be1_val)
+                        print(f"シート [{sheet.title}] の BE1 セルから入院枠上限を検出: {hospital_limit_val}名")
+                    except ValueError:
+                        pass
+
+            # 2. 空き状況データの解析
             date_row = 3  # 3行目 (openpyxlは1始まり)
             date_columns = {}  # 列番号(1始まり) -> YYYY-MM-DD
             
@@ -150,9 +173,9 @@ def parse_excel():
                 json.dump(availability_data, f, ensure_ascii=False, indent=4)
             
             # HTMLファイルに直接データを埋め込む (CORSエラー対策)
-            update_html(availability_data)
+            update_html(availability_data, hospital_limit_val)
             
-            print(f"成功: {updated_count}件の日付データを更新しました。")
+            print(f"成功: {updated_count}件の日付データと、入院枠上限: {hospital_limit_val}名を同期しました。")
 
             # Git自動同期処理
             import subprocess
@@ -178,8 +201,8 @@ def parse_excel():
         traceback.print_exc()
         return False
 
-def update_html(availability_data):
-    """index.html の AVAILABILITY_DATA 変数部分を直接書き換える"""
+def update_html(availability_data, hospital_limit):
+    """index.html の AVAILABILITY_DATA および DEFAULT_HOSPITAL_LIMIT を直接書き換える"""
     html_file = "C:/Users/tokiw/projects/shortstay-vacancy/index.html"
     if not os.path.exists(html_file):
         html_file = "index.html"
@@ -188,6 +211,8 @@ def update_html(availability_data):
             return False
         
     try:
+        print(f"HTMLへ反映する入院枠上限: {hospital_limit}名")
+
         with open(html_file, "r", encoding="utf-8") as f:
             content = f.read()
             
@@ -207,8 +232,16 @@ def update_html(availability_data):
         # 置換テキストの構築
         replacement = f"{start_marker}\n    let AVAILABILITY_DATA = {json_str};\n    "
         
-        # 置換実行
+        # AVAILABILITY_DATAの置換実行
         new_content = content[:start_idx] + replacement + content[end_idx:]
+        
+        # DEFAULT_HOSPITAL_LIMIT 定数の書き換え
+        import re
+        new_content = re.sub(
+            r'const DEFAULT_HOSPITAL_LIMIT = \d+;',
+            f'const DEFAULT_HOSPITAL_LIMIT = {hospital_limit};',
+            new_content
+        )
         
         with open(html_file, "w", encoding="utf-8") as f:
             f.write(new_content)
