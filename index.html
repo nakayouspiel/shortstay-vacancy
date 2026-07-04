@@ -732,9 +732,12 @@
             <div class="admin-control-group" style="width: 100%;">
                 <label for="hospital-limit">入院枠（特養併設）追加受入可能数</label>
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <input type="number" id="hospital-limit" class="form-control" style="width: 100px; padding: 10px;" min="0" value="3" onchange="updateHospitalLimit(this.value)">
+                    <input type="number" id="hospital-limit" class="form-control" style="width: 100px; padding: 10px; background-color: #f1f5f9; cursor: not-allowed;" min="0" value="3" disabled>
                     <span style="font-weight: 600; color: #475569;">名まで追加受け入れ可能</span>
                 </div>
+                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 4px;">
+                    ※この値はPCフォルダ内の「設定.txt」の数値を書き換えて保存することで自動更新され、ネット上に公開されます。
+                </span>
             </div>
         </div>
     </div>
