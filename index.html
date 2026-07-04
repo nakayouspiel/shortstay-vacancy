@@ -46,12 +46,22 @@
             padding: 0;
         }
 
+        html {
+            --font-scale: 1.0;
+            font-size: calc(16px * var(--font-scale));
+            transition: font-size 0.2s ease; /* なめらかにサイズ変更する */
+        }
+        html.size-small { --font-scale: 1.0; }
+        html.size-medium { --font-scale: 1.12; } /* 中サイズ (1.12倍) */
+        html.size-large { --font-scale: 1.25; }  /* 大サイズ (1.25倍) */
+
         body {
             font-family: var(--font-family);
             background-color: var(--bg-color);
             color: var(--text-main);
             line-height: 1.6;
             padding: 30px 15px;
+            font-size: 1rem; /* htmlのスケールを引き継ぐ */
         }
 
         .container {
@@ -70,6 +80,45 @@
             padding-bottom: 20px;
             border-bottom: 2px solid var(--border-color);
             position: relative; /* 子要素の絶対配置の基準にする */
+        }
+
+        /* 文字サイズ選択コントロール */
+        .size-selector-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: flex-end; /* 右寄せ */
+            margin-top: 15px;
+        }
+
+        .size-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-right: 4px;
+        }
+
+        .btn-size {
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid var(--border-color);
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-size:hover {
+            background-color: #e2e8f0;
+            color: var(--text-main);
+        }
+
+        .btn-size.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
         }
 
         .facility-header-tag {
@@ -704,6 +753,12 @@
         <div class="facility-header-tag">特別養護老人ホーム ときわ苑</div>
         <h1 id="facility-name">ショートステイ 空き状況カレンダー</h1>
         <p class="subtitle">空き状況をひと目で確認</p>
+        <div class="size-selector-container">
+            <span class="size-label">文字サイズ:</span>
+            <button type="button" id="btn-size-small" class="btn-size active" onclick="changeFontSize('small')">小</button>
+            <button type="button" id="btn-size-medium" class="btn-size" onclick="changeFontSize('medium')">中</button>
+            <button type="button" id="btn-size-large" class="btn-size" onclick="changeFontSize('large')">大</button>
+        </div>
     </header>
 
     <div class="info-panel">
@@ -1097,10 +1152,37 @@
         document.title = FACILITY_NAME;
         document.getElementById('facility-name').textContent = FACILITY_NAME;
 
+        // 保存された文字サイズ設定の読み込み
+        const savedSize = localStorage.getItem('tokiwaen_font_size') || 'small';
+        changeFontSize(savedSize);
+
         // 当月と翌月のカレンダーを描画
         const today = new Date();
         renderCalendars(today);
     });
+
+    /**
+     * 文字サイズを変更する
+     */
+    function changeFontSize(size) {
+        // html要素のクラスを切り替えてサイズをスケールする
+        const html = document.documentElement;
+        html.classList.remove('size-small', 'size-medium', 'size-large');
+        html.classList.add(`size-${size}`);
+
+        // LocalStorageに保存
+        localStorage.setItem('tokiwaen_font_size', size);
+
+        // ボタンのアクティブ状態の更新
+        const buttons = document.querySelectorAll('.btn-size');
+        buttons.forEach(btn => {
+            btn.classList.remove('active');
+        });
+        const activeBtn = document.getElementById(`btn-size-${size}`);
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+        }
+    }
 
     /**
      * 入院枠の追加上限数を取得する
