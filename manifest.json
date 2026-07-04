@@ -1,6 +1,6 @@
 {
   "name": "ときわ苑ショートステイ空き状況",
-  "short_name": "空き状況",
+  "short_name": "ときわ苑SS",
   "description": "ときわ苑ショートステイの空き状況確認・仮予約申請アプリ",
   "start_url": "./index.html",
   "display": "standalone",

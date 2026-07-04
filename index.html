@@ -69,6 +69,21 @@
             margin-bottom: 35px;
             padding-bottom: 20px;
             border-bottom: 2px solid var(--border-color);
+            position: relative; /* 子要素の絶対配置の基準にする */
+        }
+
+        .facility-header-tag {
+            position: absolute;
+            top: -10px;
+            right: 0;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            background: #f1f5f9;
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            letter-spacing: 0.5px;
         }
 
         h1 {
@@ -83,6 +98,14 @@
             font-size: 0.95rem;
             color: var(--text-muted);
             font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .facility-header-tag {
+                position: static;
+                display: inline-block;
+                margin-bottom: 12px;
+            }
         }
 
         /* 説明・凡例 */
@@ -411,19 +434,19 @@
             width: auto;
             margin: 40px 0 0 auto; /* 右寄せにする */
             padding: 6px 12px;
-            font-size: 0.75rem; /* 小さな文字 */
-            color: var(--text-muted);
-            opacity: 0.5; /* 目立たないよう半透明にする */
+            font-size: 0.65rem; /* さらに小さな文字 */
+            color: #cbd5e1; /* 背景と同化する極めて薄いグレー */
+            opacity: 0.15; /* ほぼ透明 */
             cursor: pointer;
             background: none;
             border: none;
             font-family: inherit;
             font-weight: 500;
-            transition: opacity 0.2s;
+            transition: opacity 0.2s, color 0.2s;
         }
         .admin-trigger:hover {
-            opacity: 1; /* ホバー時のみはっきり表示 */
-            color: var(--primary-color);
+            opacity: 0.6; /* ホバー時のみうっすら見える */
+            color: var(--text-muted);
             background: none;
         }
 
@@ -551,8 +574,9 @@
 
 <div class="container">
     <header>
-        <h1 id="facility-name">ショートステイ空き状況</h1>
-        <p class="subtitle">カレンダーから空き状況を確認し、仮予約メールを作成できます。</p>
+        <div class="facility-header-tag">特別養護老人ホーム ときわ苑</div>
+        <h1 id="facility-name">ショートステイ 空き状況カレンダー</h1>
+        <p class="subtitle">空き状況を確認し、カレンダーから1タップで仮予約の申請（SMS送信）が行えます。</p>
     </header>
 
     <div class="info-panel">
@@ -674,7 +698,7 @@
      ************************************************************/
     
     // 施設名
-    const FACILITY_NAME = "ショートステイ空き状況";
+    const FACILITY_NAME = "ときわ苑ショートステイ空き状況";
 
     // デフォルトの設定（データに記載がない日付の初期値）
     const DEFAULT_REGULAR_LIMIT = 8;     // 通常枠の最大数
