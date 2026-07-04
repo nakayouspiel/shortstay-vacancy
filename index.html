@@ -1170,56 +1170,7 @@
         // 認証成功でパネルを展開
         panel.classList.add('show');
 
-        // パネルが開いたら申請一覧をロードする
-        loadReservationsList();
     }
-
-    /**
-     * オンラインDBから仮予約申請リストを取得し、管理者パネルのテーブルに描画する
-     */
-    function loadReservationsList() {
-        const listContainer = document.getElementById('admin-reservations-list');
-        listContainer.innerHTML = '<p style="color: var(--text-muted); font-style: italic; font-size: 0.8rem;">データを読み込み中...</p>';
-
-        // GETリクエストでデータを取得
-        fetch(DB_URL)
-        .then(res => {
-            if (!res.ok) {
-                throw new Error("HTTP error " + res.status);
-            }
-            return res.json();
-        })
-        .then(data => {
-            if (!data || data.length === 0) {
-                listContainer.innerHTML = '<p style="color: var(--text-muted); font-style: italic; font-size: 0.8rem;">現在、届いている仮予約申請はありません。</p>';
-                return;
-            }
-
-            // 直近の申請が上に来るように逆順にする
-            const sortedData = [...data].reverse();
-
-            let html = '<table style="width: 100%; border-collapse: collapse; font-size: 0.75rem; text-align: left; background: white;">';
-            html += '<thead style="background: #f1f5f9; font-weight: 700; position: sticky; top: 0; z-index: 10;"><tr>' +
-                    '<th style="padding: 8px; border-bottom: 2px solid var(--border-color);">受付日時</th>' +
-                    '<th style="padding: 8px; border-bottom: 2px solid var(--border-color);">利用期間</th>' +
-                    '<th style="padding: 8px; border-bottom: 2px solid var(--border-color);">区分</th>' +
-                    '<th style="padding: 8px; border-bottom: 2px solid var(--border-color);">ケアマネジャー</th>' +
-                    '<th style="padding: 8px; border-bottom: 2px solid var(--border-color);">利用者名</th>' +
-                    '<th style="padding: 8px; border-bottom: 2px solid var(--border-color); text-align: center;">操作</th>' +
-                    '</tr></thead><tbody>';
-
-            sortedData.forEach(r => {
-                const isWarn = r.type === '要相談';
-                const badgeStyle = `background-color: ${isWarn ? 'var(--status-warn-bg)' : 'var(--status-ok-bg)'}; ` +
-                                   `color: ${isWarn ? 'var(--status-warn-text)' : 'var(--status-ok-text)'}; ` +
-                                   `border: 1px solid ${isWarn ? 'var(--status-warn-border)' : 'var(--status-ok-border)'}; ` +
-                                   `padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.7rem; display: inline-block;`;
-
-                html += `<tr style="border-bottom: 1px solid var(--border-color);">` +
-                        `<td style="padding: 8px; color: var(--text-muted); white-space: nowrap;">${r.timestamp}</td>` +
-                        `<td style="padding: 8px; font-weight: 600; line-height: 1.3;">${r.date}〜<br>${r.endDate}<br><span style="color: var(--primary-color); font-size: 0.7rem;">(${r.nightsText})</span></td>` +
-                        `<td style="padding: 8px;"><span style="${badgeStyle}">${r.type}</span></td>` +
-                        `<td style="padding: 8px; line-height: 1.3;">${r.officeName}<br>${r.cmName} 様</td>` +
                     /**
      * モーダルを表示する
      */
