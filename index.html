@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ショートステイ空き状況・仮予約</title>
+    <!-- PWA化のメタ設定 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0284c7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <!-- Google Fonts のインポートでモダンなタイポグラフィに -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* デザインシステム・リセット */
+        :root {
+            --primary-gradient: linear-gradient(135deg, #1e40af, #3b82f6); /* 爽やかで信頼感のあるコバルトブルー */
+            --primary-color: #1e40af;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            
+            /* 空き状況の色定義 (コントラストと視認性を重視) */
+            --status-ok-bg: #ecfdf5;     /* さわやかな極薄グリーン */
+            --status-ok-text: #047857;   /* 深いエメラルド */
+            --status-ok-border: #a7f3d0;
+            
+            --status-warn-bg: #fffbeb;   /* 温かみのあるイエローベージュ */
+            --status-warn-text: #c2410c; /* 視認性の高いダークオレンジ */
+            --status-warn-border: #fed7aa;
+            
+            --status-ng-bg: #f1f5f9;     /* 落ち着いた薄いグレー */
+            --status-ng-text: #94a3b8;   /* マイルドなグレー */
+            --status-ng-border: #cbd5e1;
+
+            --font-family: 'Outfit', 'Inter', 'Noto Sans JP', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 30px 15px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+        }
+
+        /* ヘッダー */
+        header {
+            text-align: center;
+            margin-bottom: 35px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* 説明・凡例 */
+        .info-panel {
+            background-color: #eff6ff;
+            border-left: 4px solid var(--primary-color);
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 4px 12px 12px 4px;
+            font-size: 0.9rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .info-panel ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .info-panel li {
+            margin-bottom: 4px;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #dbeafe;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .legend-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            border: 1px solid transparent;
+        }
+
+        /* カレンダー表示エリア */
+        .calendar-container {
+            display: flex;
+            flex-direction: column;
+            gap: 45px;
+        }
+
+        .month-section {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            background: var(--card-bg);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+        }
+
+        .month-header {
+            background: var(--primary-gradient);
+            color: white;
+            text-align: center;
+            padding: 16px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* カレンダーグリッド */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            border-collapse: collapse;
+        }
+
+        .day-header {
+            background-color: #f8fafc;
+            text-align: center;
+            padding: 12px 0;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #475569;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .day-header.sun { color: #ef4444; }
+        .day-header.sat { color: #3b82f6; }
+
+        .day-cell {
+            min-height: 105px;
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background-color: #fff;
+            transition: background-color 0.2s;
+        }
+
+        .day-cell:hover {
+            background-color: #fafbfd;
+        }
+
+        .day-cell:nth-child(7n) {
+            border-right: none;
+        }
+
+        .day-cell.empty {
+            background-color: #f8fafc;
+        }
+
+        .day-number {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+            color: #475569;
+            align-self: flex-start;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        /* 土日のカレンダー背景調整 */
+        .day-cell.sun { background-color: #fffafb; }
+        .day-cell.sat { background-color: #f7faff; }
+        .day-cell.sun .day-number { color: #ef4444; }
+        .day-cell.sat .day-number { color: #3b82f6; }
+
+        /* 通常・入院統合ボタン */
+        .btn-status {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 6px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 44px; /* モバイルのタッチターゲット基準 */
+        }
+
+        /* ボタン状態別スタイル */
+        .btn-status.ok {
+            background-color: var(--status-ok-bg);
+            color: var(--status-ok-text);
+            border-color: var(--status-ok-border);
+        }
+        .btn-status.ok:hover {
+            background-color: #d1fae5;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(4, 120, 87, 0.1);
+        }
+
+        .btn-status.warn {
+            background-color: var(--status-warn-bg);
+            color: var(--status-warn-text);
+            border-color: var(--status-warn-border);
+        }
+        .btn-status.warn:hover {
+            background-color: #ffedd5;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(194, 65, 12, 0.1);
+        }
+
+        .btn-status.ng {
+            background-color: var(--status-ng-bg);
+            color: var(--status-ng-text);
+            border-color: var(--status-ng-border);
+            cursor: not-allowed;
+            pointer-events: none; /* クリック不可 */
+        }
+
+        /* モーダルダイアログ */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px); /* プレミアムな背景ぼかし */
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            padding: 32px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 520px;
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.15);
+            animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes modalFadeIn {
+            from { transform: translateY(15px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 14px;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.4rem;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        .selected-info {
+            background-color: #f8fafc;
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        /* フォーム要素 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #334155;
+        }
+
+        .form-group label .required {
+            color: #ef4444;
+            margin-left: 4px;
+            font-size: 0.75rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            color: var(--text-main);
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+        }
+
+        /* 注意書き */
+        .notice {
+            background-color: #fff1f2;
+            border: 1px solid #fecdd3;
+            color: #be123c;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 24px;
+            font-weight: 700;
+        }
+
+        /* ボタンエリア */
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-cancel {
+            background-color: #f1f5f9;
+            color: #475569;
+        }
+        .btn-cancel:hover {
+            background-color: #e2e8f0;
+        }
+
+        .btn-submit {
+            background-color: var(--primary-color);
+            color: white;
+            flex-grow: 1;
+        }
+        .btn-submit:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .admin-trigger {
+            display: block;
+            width: auto;
+            margin: 40px 0 0 auto; /* 右寄せにする */
+            padding: 6px 12px;
+            font-size: 0.75rem; /* 小さな文字 */
+            color: var(--text-muted);
+            opacity: 0.5; /* 目立たないよう半透明にする */
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: inherit;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+        .admin-trigger:hover {
+            opacity: 1; /* ホバー時のみはっきり表示 */
+            color: var(--primary-color);
+            background: none;
+        }
+
+        .admin-panel {
+            display: none;
+            background-color: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        .admin-panel.show {
+            display: block;
+        }
+
+        .admin-title {
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .admin-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .admin-control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .admin-control-group label {
+            font-weight: 700;
+            color: #475569;
+        }
+
+        .admin-info-box {
+            background-color: #f1f5f9;
+            padding: 14px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+            padding: 10px 18px;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            align-self: flex-start;
+        }
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        /* レスポンシブ対応 (スマホ対応の強化) */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px 8px;
+            }
+
+            .container {
+                padding: 16px 12px;
+                border-radius: 12px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .info-panel {
+                padding: 14px;
+                margin-bottom: 20px;
+                font-size: 0.85rem;
+            }
+
+            .legend {
+                gap: 10px;
+            }
+
+            .legend-item {
+                font-size: 0.75rem;
+            }
+
+            .day-cell {
+                min-height: 80px; /* 少し高さを抑えて全体が見えるように */
+                padding: 4px;
+            }
+
+            .day-number {
+                font-size: 0.8rem;
+                margin-bottom: 4px;
+                width: 20px;
+                height: 20px;
+            }
+
+            .btn-status {
+                padding: 4px 2px;
+                font-size: 0.75rem;
+                border-radius: 6px;
+                min-height: 38px;
+            }
+
+            .admin-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1 id="facility-name">ショートステイ空き状況</h1>
+        <p class="subtitle">カレンダーから空き状況を確認し、仮予約メールを作成できます。</p>
+    </header>
+
+    <div class="info-panel">
+        <strong>【ご利用案内】</strong>
+        <ul>
+            <li>空きがある日付のボタンをクリックすると、仮予約の申請画面が開きます。</li>
+            <li>「〇 空きあり」は、通常のお部屋に空きがある状態です。</li>
+            <li>「△ 空きあり (要相談)」は、調整が必要な空き状況です。特養入所者様が急遽退院された場合などは、ご利用いただけなくなる可能性がございますのであらかじめご了承ください。</li>
+            <li style="color: #be123c; font-weight: 700;">※本サイトでの申請はすべて「仮予約」となります。調整が整い、予約が確定しましたら、施設より「ショートメール」にて通知いたします。</li>
+        </ul>
+        <div class="legend">
+            <div class="legend-item">
+                <span class="legend-badge" style="background-color: var(--status-ok-bg); color: var(--status-ok-text); border: 1px solid var(--status-ok-border)">〇</span>
+                空きあり
+            </div>
+            <div class="legend-item">
+                <span class="legend-badge" style="background-color: var(--status-warn-bg); color: var(--status-warn-text); border: 1px solid var(--status-warn-border)">△</span>
+                空きあり (要相談)
+            </div>
+            <div class="legend-item">
+                <span class="legend-badge" style="background-color: var(--status-ng-bg); color: var(--status-ng-text); border: 1px solid var(--status-ng-border)">✕</span>
+                空きなし
+            </div>
+        </div>
+    </div>
+
+    <!-- カレンダー表示エリア -->
+    <div id="calendar-area" class="calendar-container">
+        <!-- JSで動的にカレンダーが挿入されます -->
+    </div>
+
+    <!-- 【施設管理用】設定パネル（暗証番号保護） -->
+    <button type="button" id="admin-trigger-btn" class="admin-trigger" onclick="toggleAdminPanel()">
+        ⚙ 管理者設定
+    </button>
+    <div id="admin-panel" class="admin-panel">
+        <div class="admin-title">施設管理用設定</div>
+        
+        <div class="admin-row" style="display: flex; flex-direction: column; gap: 16px;">
+            <!-- 入院枠の定員設定 -->
+            <div class="admin-control-group" style="width: 100%;">
+                <label for="hospital-limit">入院枠（特養併設）追加受入可能数</label>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="number" id="hospital-limit" class="form-control" style="width: 100px; padding: 10px;" min="0" value="3" onchange="updateHospitalLimit(this.value)">
+                    <span style="font-weight: 600; color: #475569;">名まで追加受け入れ可能</span>
+                </div>
+            </div>
+
+            <!-- ショートメール(SMS)送信先設定 -->
+            <div class="admin-control-group" style="width: 100%;">
+                <label for="sms-to-number">仮予約の通知を受け取る携帯電話番号（スマホ用）</label>
+                <input type="tel" id="sms-to-number" class="form-control" style="width: 100%; padding: 10px; max-width: 250px;" placeholder="例：09012345678" onchange="updateSmsTo(this.value)">
+                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 4px;">
+                    ※ケアマネジャーがスマホで操作している場合、この番号宛てに「ショートメール(SMS)」が自動作成されます。（ハイフンなし）
+                </span>
+            </div>
+
+            <!-- メール(Email)送信先設定 -->
+            <div class="admin-control-group" style="width: 100%;">
+                <label for="email-to-address">仮予約の通知を受け取るメールアドレス（PC用）</label>
+                <input type="email" id="email-to-address" class="form-control" style="width: 100%; padding: 10px; max-width: 350px;" placeholder="例：info@example.com" onchange="updateEmailTo(this.value)">
+                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 4px;">
+                    ※ケアマネジャーがPCで操作している場合、このアドレス宛てに「仮予約メール(Outlook等起動)」が自動作成されます。
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 仮予約モーダル -->
+<div id="reservation-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span class="modal-title">仮予約の申請</span>
+        </div>
+        
+        <div class="selected-info">
+            <strong>利用開始日：</strong> <span id="info-date">2026年7月4日</span><br>
+            <strong>希望タイプ：</strong> <span id="info-type">通常</span>
+        </div>
+
+        <form id="reservation-form" onsubmit="handleFormSubmit(event)">
+            <!-- 利用期間（泊数）の選択欄 (空き状況を元にJSで動的生成されます) -->
+            <div class="form-group">
+                <label for="stay-nights">利用期間（泊数）<span class="required">※必須</span></label>
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <select id="stay-nights" class="form-control" style="width: auto; padding: 10px; min-width: 140px;" onchange="calculateNightsFromSelect()">
+                        <!-- JSで動的に追加されます -->
+                    </select>
+                    <span id="end-date-display" style="font-weight: 700; color: #475569; font-size: 0.95rem;">退所予定日：--年--月--日</span>
+                </div>
+                <div id="period-warn-notice" style="display: none; color: #be123c; font-size: 0.8rem; margin-top: 6px; font-weight: 500; line-height: 1.4;">
+                    ※ご希望の期間中（退所予定日含む）に「空きなし（満床）」の日程が含まれています。お部屋の調整が必要になるか、ご案内できない可能性がございます。
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="office-name">居宅介護支援事業所名<span class="required">※必須</span></label>
+                <input type="text" id="office-name" class="form-control" placeholder="例：〇〇ケアプランセンター" required>
+            </div>
+
+            <div class="form-group">
+                <label for="cm-name">担当ケアマネジャー氏名<span class="required">※必須</span></label>
+                <input type="text" id="cm-name" class="form-control" placeholder="例：山田 太郎" required>
+            </div>
+
+            <div class="form-group">
+                <label for="user-name">利用者氏名（フルネーム）<span class="required">※必須</span></label>
+                <input type="text" id="user-name" class="form-control" placeholder="例：鈴木 一郎" required>
+            </div>
+
+            <div class="notice">
+                ※本システムは、すでにケアプランに位置付けがある既存の利用者様専用です。新規はお受けできません。
+                <span id="modal-warn-notice" style="display: none; color: #be123c;"><br>※「要相談」の日程は、特養入所者様の退院状況などによってご利用いただけなくなる場合がございます。あらかじめご了承ください。</span>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" onclick="closeModal()">キャンセル</button>
+                <button type="submit" class="btn btn-submit">登録</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Service Workerの登録（PWA化）
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./service-worker.js')
+                .then(reg => console.log('Service Worker registered', reg))
+                .catch(err => console.error('Service Worker registration failed', err));
+        });
+    }
+
+    /************************************************************
+     * 1. 各種設定および定数
+     ************************************************************/
+    
+    // 施設名
+    const FACILITY_NAME = "ショートステイ空き状況";
+
+    // デフォルトの設定（データに記載がない日付の初期値）
+    const DEFAULT_REGULAR_LIMIT = 8;     // 通常枠の最大数
+    const DEFAULT_HOSPITAL_LIMIT = 3;     // 入院枠の追加可能人数のデフォルト値
+
+    // LocalStorageのキー
+    const STORAGE_KEY = "shortstay_vacancy_data_v2";
+    const STORAGE_HOSPITAL_LIMIT_KEY = "shortstay_hospital_limit";
+    const STORAGE_SMS_TO_KEY = "shortstay_sms_to_number";
+    const STORAGE_EMAIL_TO_KEY = "shortstay_email_to_address";
+
+    // 通知先設定（SMSとEmail）
+    let activeSmsTo = "";
+    let activeEmailTo = "info@example.com"; // 初期フォールバックアドレス
+
+    // === PYTHON_AUTO_REPLACE_START ===
+    let AVAILABILITY_DATA = {
+        "2026-07-01": {
+                "regular": 0
+        },
+        "2026-07-02": {
+                "regular": 0
+        },
+        "2026-07-03": {
+                "regular": 0
+        },
+        "2026-07-04": {
+                "regular": -2
+        },
+        "2026-07-05": {
+                "regular": -4
+        },
+        "2026-07-06": {
+                "regular": -1
+        },
+        "2026-07-07": {
+                "regular": 1
+        },
+        "2026-07-08": {
+                "regular": 1
+        },
+        "2026-07-09": {
+                "regular": 2
+        },
+        "2026-07-10": {
+                "regular": 1
+        },
+        "2026-07-11": {
+                "regular": 0
+        },
+        "2026-07-12": {
+                "regular": 0
+        },
+        "2026-07-13": {
+                "regular": 0
+        },
+        "2026-07-14": {
+                "regular": 1
+        },
+        "2026-07-15": {
+                "regular": -1
+        },
+        "2026-07-16": {
+                "regular": -2
+        },
+        "2026-07-17": {
+                "regular": 0
+        },
+        "2026-07-18": {
+                "regular": 0
+        },
+        "2026-07-19": {
+                "regular": -1
+        },
+        "2026-07-20": {
+                "regular": -2
+        },
+        "2026-07-21": {
+                "regular": 0
+        },
+        "2026-07-22": {
+                "regular": 0
+        },
+        "2026-07-23": {
+                "regular": 0
+        },
+        "2026-07-24": {
+                "regular": 0
+        },
+        "2026-07-25": {
+                "regular": -1
+        },
+        "2026-07-26": {
+                "regular": -1
+        },
+        "2026-07-27": {
+                "regular": -1
+        },
+        "2026-07-28": {
+                "regular": 0
+        },
+        "2026-07-29": {
+                "regular": -1
+        },
+        "2026-07-30": {
+                "regular": -1
+        },
+        "2026-07-31": {
+                "regular": -1
+        },
+        "2026-08-01": {
+                "regular": 0
+        },
+        "2026-08-02": {
+                "regular": -1
+        },
+        "2026-08-03": {
+                "regular": 0
+        },
+        "2026-08-04": {
+                "regular": 0
+        },
+        "2026-08-05": {
+                "regular": -1
+        },
+        "2026-08-06": {
+                "regular": -1
+        },
+        "2026-08-07": {
+                "regular": -1
+        },
+        "2026-08-08": {
+                "regular": -3
+        },
+        "2026-08-09": {
+                "regular": -3
+        },
+        "2026-08-10": {
+                "regular": -1
+        },
+        "2026-08-11": {
+                "regular": -1
+        },
+        "2026-08-12": {
+                "regular": -2
+        },
+        "2026-08-13": {
+                "regular": 1
+        },
+        "2026-08-14": {
+                "regular": 1
+        },
+        "2026-08-15": {
+                "regular": -1
+        },
+        "2026-08-16": {
+                "regular": -2
+        },
+        "2026-08-17": {
+                "regular": -1
+        },
+        "2026-08-18": {
+                "regular": 0
+        },
+        "2026-08-19": {
+                "regular": -1
+        },
+        "2026-08-20": {
+                "regular": -1
+        },
+        "2026-08-21": {
+                "regular": -1
+        },
+        "2026-08-22": {
+                "regular": -2
+        },
+        "2026-08-23": {
+                "regular": -2
+        },
+        "2026-08-24": {
+                "regular": 0
+        },
+        "2026-08-25": {
+                "regular": 0
+        },
+        "2026-08-26": {
+                "regular": -1
+        },
+        "2026-08-27": {
+                "regular": 1
+        },
+        "2026-08-28": {
+                "regular": 1
+        },
+        "2026-08-29": {
+                "regular": 0
+        },
+        "2026-08-30": {
+                "regular": -1
+        },
+        "2026-08-31": {
+                "regular": 1
+        }
+};
+    // === PYTHON_AUTO_REPLACE_END ===
+
+
+    /************************************************************
+     * 2. アプリケーション初期化
+     ************************************************************/
+
+    // 現在選択中の予約情報テンポラリ
+    let activeReservation = {
+        date: "",
+        type: "" // "通常枠" または "入院枠"
+    };
+
+    // ページロード時の初期化
+    window.addEventListener('DOMContentLoaded', () => {
+        // 施設名の設定
+        document.title = FACILITY_NAME;
+        document.getElementById('facility-name').textContent = FACILITY_NAME;
+
+        // 設定の読み込み
+        loadSettings();
+
+        // 当月と翌月のカレンダーを描画
+        const today = new Date();
+        renderCalendars(today);
+    });
+
+    /**
+     * LocalStorageから設定を読み込む
+     */
+    function loadSettings() {
+        const storedLimit = localStorage.getItem(STORAGE_HOSPITAL_LIMIT_KEY);
+        if (storedLimit !== null) {
+            document.getElementById('hospital-limit').value = parseInt(storedLimit, 10);
+        } else {
+            document.getElementById('hospital-limit').value = DEFAULT_HOSPITAL_LIMIT;
+        }
+
+        // SMS送信先電話番号の読み込み
+        const storedSmsTo = localStorage.getItem(STORAGE_SMS_TO_KEY);
+        if (storedSmsTo !== null) {
+            activeSmsTo = storedSmsTo;
+            document.getElementById('sms-to-number').value = storedSmsTo;
+        }
+
+        // メール送信先アドレスの読み込み
+        const storedEmailTo = localStorage.getItem(STORAGE_EMAIL_TO_KEY);
+        if (storedEmailTo !== null) {
+            activeEmailTo = storedEmailTo;
+            document.getElementById('email-to-address').value = storedEmailTo;
+        }
+    }
+
+    /**
+     * SMS送信先携帯電話番号の更新処理
+     */
+    function updateSmsTo(value) {
+        const num = value.trim().replace(/[^0-9]/g, ''); // 数字のみを抽出
+        localStorage.setItem(STORAGE_SMS_TO_KEY, num);
+        activeSmsTo = num;
+    }
+
+    /**
+     * メール送信先アドレスの更新処理
+     */
+    function updateEmailTo(value) {
+        const email = value.trim();
+        localStorage.setItem(STORAGE_EMAIL_TO_KEY, email);
+        activeEmailTo = email;
+    }
+
+    /**
+     * 入院枠の追加上限数を取得する
+     */
+    function getHospitalLimit() {
+        const limitVal = parseInt(document.getElementById('hospital-limit').value, 10);
+        return isNaN(limitVal) ? DEFAULT_HOSPITAL_LIMIT : limitVal;
+    }
+
+    /**
+     * 入院枠追加上限数の更新処理
+     */
+    function updateHospitalLimit(value) {
+        const limit = parseInt(value, 10);
+        if (isNaN(limit) || limit < 0) return;
+        localStorage.setItem(STORAGE_HOSPITAL_LIMIT_KEY, String(limit));
+        
+        // カレンダー再描画
+        renderCalendars(new Date());
+    }
+
+
+    /************************************************************
+     * 3. カレンダー描画ロジック (期間制限: 当月と翌月のみ)
+     ************************************************************/
+
+    /**
+     * 当月と翌月のカレンダーを描画する
+     */
+    function renderCalendars(baseDate) {
+        const container = document.getElementById('calendar-area');
+        container.innerHTML = '';
+
+        // 1. 当月 (基準日の月)
+        const currentMonthDate = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
+        container.appendChild(createMonthCalendarHTML(currentMonthDate));
+
+        // 2. 翌月 (当月の次の月)
+        const nextMonthDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 1);
+        container.appendChild(createMonthCalendarHTML(nextMonthDate));
+    }
+
+    /**
+     * 指定した月のカレンダーHTML要素を作成して返す
+     */
+    function createMonthCalendarHTML(dateObj) {
+        const year = dateObj.getFullYear();
+        const month = dateObj.getMonth(); // 0-11
+
+        const section = document.createElement('section');
+        section.className = 'month-section';
+
+        // 月ヘッダー
+        const header = document.createElement('div');
+        header.className = 'month-header';
+        header.textContent = `${year}年 ${month + 1}月`;
+        section.appendChild(header);
+
+        // カレンダーグリッド
+        const grid = document.createElement('div');
+        grid.className = 'calendar-grid';
+
+        // 曜日ヘッダー
+        const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+        weekdays.forEach((day, index) => {
+            const dayHeader = document.createElement('div');
+            dayHeader.className = 'day-header';
+            if (index === 0) dayHeader.classList.add('sun');
+            if (index === 6) dayHeader.classList.add('sat');
+            dayHeader.textContent = day.substring(0, 1); // モバイル向けに1文字表示
+            grid.appendChild(dayHeader);
+        });
+
+        // 月の最初の日と最終日の取得
+        const firstDayIndex = new Date(year, month, 1).getDay(); // 開始曜日のインデックス (0:日〜6:土)
+        const lastDate = new Date(year, month + 1, 0).getDate(); // 月の最終日
+
+        // 1日より前の空セルを挿入
+        for (let i = 0; i < firstDayIndex; i++) {
+            const emptyCell = document.createElement('div');
+            emptyCell.className = 'day-cell empty';
+            grid.appendChild(emptyCell);
+        }
+
+        // 日付セルの挿入
+        for (let day = 1; day <= lastDate; day++) {
+            const cellDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const dayOfWeek = new Date(year, month, day).getDay();
+
+            const cell = document.createElement('div');
+            cell.className = 'day-cell';
+            if (dayOfWeek === 0) cell.classList.add('sun');
+            if (dayOfWeek === 6) cell.classList.add('sat');
+
+            // 日付表示
+            const dayNum = document.createElement('div');
+            dayNum.className = 'day-number';
+            dayNum.textContent = day;
+            cell.appendChild(dayNum);
+
+            // 空き状況の判定とボタン生成
+            const statusInfo = getAvailabilityStatus(cellDateStr);
+
+            const statusBtn = document.createElement('button');
+            statusBtn.type = 'button';
+            statusBtn.className = `btn-status ${statusInfo.status}`;
+            statusBtn.textContent = statusInfo.text;
+            
+            if (statusInfo.status !== 'ng') {
+                statusBtn.onclick = () => openModal(cellDateStr, statusInfo.type);
+            }
+            
+            cell.appendChild(statusBtn);
+            grid.appendChild(cell);
+        }
+
+        // 月の最終日の後の空セルを挿入
+        const totalCells = firstDayIndex + lastDate;
+        const remainingCells = (7 - (totalCells % 7)) % 7;
+        for (let i = 0; i < remainingCells; i++) {
+            const emptyCell = document.createElement('div');
+            emptyCell.className = 'day-cell empty';
+            grid.appendChild(emptyCell);
+        }
+
+        section.appendChild(grid);
+        return section;
+    }
+
+    /**
+     * 指定された日付の空き状況（統合ボタンの表示）を判定して返す
+     */
+    function getAvailabilityStatus(dateStr) {
+        const data = AVAILABILITY_DATA[dateStr];
+        const hospitalLimit = getHospitalLimit(); // 設定された入院枠追加枠数
+        
+        let regularVal = DEFAULT_REGULAR_LIMIT; // デフォルト残数：8
+        if (data && data.regular !== undefined) {
+            regularVal = data.regular;
+        }
+
+        // 1. 空きがある場合 (残床数 1 以上)
+        if (regularVal > 0) {
+            return {
+                status: 'ok',
+                text: `〇 残り${regularVal}床`,
+                type: '通常'
+            };
+        } 
+        // 2. 調整可能な場合
+        else if (regularVal <= 0 && regularVal > -hospitalLimit) {
+            return {
+                status: 'warn',
+                text: `△ 要相談`,
+                type: '要相談'
+            };
+        } 
+        // 3. 完全に空きがない場合
+        else {
+            return {
+                status: 'ng',
+                text: `✕ 満床`,
+                type: ''
+            };
+        }
+    }
+
+
+    /************************************************************
+     * 4. 【施設管理用】設定パネル表示
+     ************************************************************/
+
+    // 認証フラグの保持
+    let isAdminAuthorized = false;
+
+    /**
+     * 管理員用パネルの開閉トグル（暗証番号認証）
+     */
+    function toggleAdminPanel() {
+        const panel = document.getElementById('admin-panel');
+        
+        // 既にパネルが開いている場合は単に閉じる
+        if (panel.classList.contains('show')) {
+            panel.classList.remove('show');
+            return;
+        }
+
+        // 未認証の場合のみ暗証番号を求める
+        if (!isAdminAuthorized) {
+            const password = prompt("施設管理用の暗証番号を入力してください：");
+            if (password === "tokiwa8899") {
+                isAdminAuthorized = true;
+            } else {
+                if (password !== null) { // キャンセルクリック時以外にエラー表示
+                    alert("暗証番号が正しくありません。");
+                }
+                return;
+            }
+        }
+
+        // 認証成功でパネルを展開
+        panel.classList.add('show');
+
+        // パネルが開いたら申請一覧をロードする
+        loadReservationsList();
+    }
+
+    /**
+     * オンラインDBから仮予約申請リストを取得し、管理者パネルのテーブルに描画する
+     */
+    function loadReservationsList() {
+        const listContainer = document.getElementById('admin-reservations-list');
+        listContainer.innerHTML = '<p style="color: var(--text-muted); font-style: italic; font-size: 0.8rem;">データを読み込み中...</p>';
+
+        // GETリクエストでデータを取得
+        fetch(DB_URL)
+        .then(res => {
+            if (!res.ok) {
+                throw new Error("HTTP error " + res.status);
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (!data || data.length === 0) {
+                listContainer.innerHTML = '<p style="color: var(--text-muted); font-style: italic; font-size: 0.8rem;">現在、届いている仮予約申請はありません。</p>';
+                return;
+            }
+
+            // 直近の申請が上に来るように逆順にする
+            const sortedData = [...data].reverse();
+
+            let html = '<table style="width: 100%; border-collapse: collapse; font-size: 0.75rem; text-align: left; background: white;">';
+            html += '<thead style="background: #f1f5f9; font-weight: 700; position: sticky; top: 0; z-index: 10;"><tr>' +
+                    '<th style="padding: 8px; border-bottom: 2px solid var(--border-color);">受付日時</th>' +
+                    '<th style="padding: 8px; border-bottom: 2px solid var(--border-color);">利用期間</th>' +
+                    '<th style="padding: 8px; border-bottom: 2px solid var(--border-color);">区分</th>' +
+                    '<th style="padding: 8px; border-bottom: 2px solid var(--border-color);">ケアマネジャー</th>' +
+                    '<th style="padding: 8px; border-bottom: 2px solid var(--border-color);">利用者名</th>' +
+                    '<th style="padding: 8px; border-bottom: 2px solid var(--border-color); text-align: center;">操作</th>' +
+                    '</tr></thead><tbody>';
+
+            sortedData.forEach(r => {
+                const isWarn = r.type === '要相談';
+                const badgeStyle = `background-color: ${isWarn ? 'var(--status-warn-bg)' : 'var(--status-ok-bg)'}; ` +
+                                   `color: ${isWarn ? 'var(--status-warn-text)' : 'var(--status-ok-text)'}; ` +
+                                   `border: 1px solid ${isWarn ? 'var(--status-warn-border)' : 'var(--status-ok-border)'}; ` +
+                                   `padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.7rem; display: inline-block;`;
+
+                html += `<tr style="border-bottom: 1px solid var(--border-color);">` +
+                        `<td style="padding: 8px; color: var(--text-muted); white-space: nowrap;">${r.timestamp}</td>` +
+                        `<td style="padding: 8px; font-weight: 600; line-height: 1.3;">${r.date}〜<br>${r.endDate}<br><span style="color: var(--primary-color); font-size: 0.7rem;">(${r.nightsText})</span></td>` +
+                        `<td style="padding: 8px;"><span style="${badgeStyle}">${r.type}</span></td>` +
+                        `<td style="padding: 8px; line-height: 1.3;">${r.officeName}<br>${r.cmName} 様</td>` +
+                    /**
+     * モーダルを表示する
+     */
+    function openModal(dateStr, type) {
+        activeReservation.date = dateStr;
+        activeReservation.type = type;
+
+        // 日付表示のフォーマット (2026-07-04 -> 2026年07月04日)
+        const dateParts = dateStr.split('-');
+        const formattedDate = `${dateParts[0]}年${dateParts[1]}月${dateParts[2]}日`;
+
+        document.getElementById('info-date').textContent = formattedDate;
+
+        // 利用者名欄は毎回クリア、事業所名・ケアマネ名は前回の入力を残す仕様
+        document.getElementById('user-name').value = '';
+
+        // 空き状況とカレンダー上限を読み取り、宿泊期間（ドロップダウン）の選択肢を動的に生成する
+        const select = document.getElementById('stay-nights');
+        select.innerHTML = ''; // クリア
+
+        const startDate = new Date(dateStr);
+        let allowedNights = 1; // 1泊2日は常に許可（ボタンを押せているため）
+        const maxLimitNights = 30; // 予約可能な最大上限（30泊）
+
+        // 最大月（翌月末）の算出
+        const today = new Date();
+        const nextMonthLast = new Date(today.getFullYear(), today.getMonth() + 2, 0);
+
+        for (let nights = 1; nights <= maxLimitNights; nights++) {
+            // N泊する場合、開始日〜退所予定日(N日後)までの全N+1日間に空きがあるかスキャン
+            let isAvailable = true;
+
+            for (let dayOffset = 0; dayOffset <= nights; dayOffset++) {
+                const checkDate = new Date(startDate);
+                checkDate.setDate(startDate.getDate() + dayOffset);
+
+                // 翌月末を超えたら終了
+                if (checkDate > nextMonthLast) {
+                    isAvailable = false;
+                    break;
+                }
+
+                const yyyy = checkDate.getFullYear();
+                const mm = String(checkDate.getMonth() + 1).padStart(2, '0');
+                const dd = String(checkDate.getDate()).padStart(2, '0');
+                const checkDateStr = `${yyyy}-${mm}-${dd}`;
+
+                const statusInfo = getAvailabilityStatus(checkDateStr);
+                if (statusInfo.status === 'ng') {
+                    isAvailable = false;
+                    break;
+                }
+            }
+
+            if (!isAvailable) {
+                // 翌日（退所日含む）に満床が見つかったら、そこまでの泊数を上限とする
+                if (nights > 1) {
+                    allowedNights = nights - 1;
+                } else {
+                    allowedNights = 0; // 翌日がすでに満床なら0泊制限
+                }
+                break;
+            }
+            allowedNights = nights;
+        }
+
+        // 最低限「1泊2日」は選べるように保証する
+        allowedNights = Math.max(1, allowedNights);
+
+        // allowedNights分のoptionタグを生成して挿入
+        for (let n = 1; n <= allowedNights; n++) {
+            const opt = document.createElement('option');
+            opt.value = String(n);
+            opt.textContent = `${n}泊${n+1}日`;
+            select.appendChild(opt);
+        }
+
+        // 初期選択値を「1」に設定
+        select.value = "1";
+
+        // 退所予定日と泊数の計算、期間全体の空き状況判定を実行
+        calculateNightsFromSelect();
+
+        const modal = document.getElementById('reservation-modal');
+        modal.classList.add('show');
+    }
+
+    /**
+     * モーダルを閉じる
+     */
+    function closeModal() {
+        const modal = document.getElementById('reservation-modal');
+        modal.classList.remove('show');
+    }
+
+    /**
+     * 宿泊数・期間空き状況の計算と判定 (セレクトボックス連動)
+     */
+    function calculateNightsFromSelect() {
+        const startStr = activeReservation.date;
+        if (!startStr) return;
+
+        const select = document.getElementById('stay-nights');
+        const nights = parseInt(select.value, 10);
+        if (isNaN(nights)) return;
+
+        const days = nights + 1;
+        const nightsText = `${nights}泊${days}日`;
+
+        // 退所予定日の計算
+        const start = new Date(startStr);
+        const end = new Date(start);
+        end.setDate(start.getDate() + nights);
+
+        const yyyy = end.getFullYear();
+        const mm = String(end.getMonth() + 1).padStart(2, '0');
+        const dd = String(end.getDate()).padStart(2, '0');
+        const endDateStr = `${yyyy}-${mm}-${dd}`;
+        activeReservation.endDate = endDateStr; // メール送信時に利用
+
+        // 画面表示の更新
+        document.getElementById('end-date-display').textContent = `退所予定日：${yyyy}年${mm}月${dd}日`;
+
+        // 期間内の空き状況チェック（退所日当日まで ＝ nights + 1 日間）
+        let currentDate = new Date(start);
+        let hasNg = false;
+        let hasWarn = false;
+
+        for (let i = 0; i <= nights; i++) {
+            const loopY = currentDate.getFullYear();
+            const loopM = String(currentDate.getMonth() + 1).padStart(2, '0');
+            const loopD = String(currentDate.getDate()).padStart(2, '0');
+            const loopDateStr = `${loopY}-${loopM}-${loopD}`;
+
+            const statusInfo = getAvailabilityStatus(loopDateStr);
+            if (statusInfo.status === 'ng') {
+                hasNg = true;
+            } else if (statusInfo.status === 'warn') {
+                hasWarn = true;
+            }
+
+            // 次の日に進む
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        // 希望タイプの更新 (期間中に要相談の日が1日でもあれば要相談とする)
+        let overallType = '通常';
+        if (hasWarn) {
+            overallType = '要相談';
+        }
+        activeReservation.type = overallType;
+        document.getElementById('info-type').textContent = overallType;
+
+        // 警告エリアの制御
+        const warnNotice = document.getElementById('modal-warn-notice');
+        if (overallType === '要相談') {
+            warnNotice.style.display = 'inline';
+        } else {
+            warnNotice.style.display = 'none';
+        }
+
+        // 満床（空きなし）が含まれる場合の警告表示
+        const periodWarn = document.getElementById('period-warn-notice');
+        if (hasNg) {
+            periodWarn.style.display = 'block';
+        } else {
+            periodWarn.style.display = 'none';
+        }
+    }
+
+    /**
+     * フォーム送信処理（PCならメール起動、スマホならショートメール(SMS)起動のハイブリッド自動切替）
+     */
+    function handleFormSubmit(event) {
+        event.preventDefault();
+
+        const officeName = document.getElementById('office-name').value.trim();
+        const cmName = document.getElementById('cm-name').value.trim();
+        const userName = document.getElementById('user-name').value.trim();
+
+        if (!officeName || !cmName || !userName) {
+            alert('すべての必須項目を入力してください。');
+            return;
+        }
+
+        // 開始日のフォーマット
+        const dateParts = activeReservation.date.split('-');
+        const formattedDate = `${dateParts[0]}年${dateParts[1]}月${dateParts[2]}日`;
+
+        // 退所日のフォーマット
+        const endDateParts = activeReservation.endDate.split('-');
+        const formattedEndDate = `${endDateParts[0]}年${endDateParts[1]}月${endDateParts[2]}日`;
+
+        const select = document.getElementById('stay-nights');
+        const nightsText = select.options[select.selectedIndex].text;
+
+        // モバイルデバイス判定
+        const ua = navigator.userAgent.toLowerCase();
+        const isMobile = /android|iphone|ipad|ipod/i.test(ua);
+
+        // 1. スマホからのアクセスで、かつSMS宛先が設定されている場合 ➡ ショートメール（SMS）起動
+        if (isMobile && activeSmsTo) {
+            // ショートメール本文の組み立て (全角70文字前後で簡潔に)
+            const smsBody = 
+                `【ショートステイ仮予約申請】\n` +
+                `希望期間:${formattedDate}〜${formattedEndDate} (${nightsText})\n` +
+                `区分:${activeReservation.type}\n` +
+                `事業所:${officeName}\n` +
+                `ケアマネ:${cmName}様\n` +
+                `利用者:${userName}様`;
+
+            let smsUrl = "";
+            if (ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1) {
+                // iOS: 区切り文字が &
+                smsUrl = `sms:${activeSmsTo}&body=${encodeURIComponent(smsBody)}`;
+            } else {
+                // Android等: 区切り文字が ?
+                smsUrl = `sms:${activeSmsTo}?body=${encodeURIComponent(smsBody)}`;
+            }
+
+            window.location.href = smsUrl;
+            closeModal();
+            return;
+        }
+
+        // 2. PCからのアクセス、またはスマホで電話番号未設定の場合 ➡ メール（mailto）起動
+        if (!activeEmailTo) {
+            alert("仮予約を送信するための『通知用メールアドレス』が設定されていません。\n\n画面右下の「⚙ 管理者設定」ボタンを押し、暗証番号(tokiwa8899)を入力して、通知を受け取るメールアドレスを設定してください。");
+            return;
+        }
+
+        const subject = `【仮予約申請】ショートステイ利用希望（${formattedDate}〜${formattedEndDate}）`;
+        const bodyLines = [
+            `ショートステイ担当者様`,
+            "",
+            "いつもお世話になっております。",
+            "以下の通り、ショートステイの仮予約申請を行います。",
+            "",
+            "=========================================",
+            "■ 希望内容",
+            `  ・利用開始日 : ${formattedDate}`,
+            `  ・退所希望日 : ${formattedEndDate} (${nightsText})`,
+            `  ・希望タイプ : ${activeReservation.type}`,
+            "",
+            "■ ケアマネジャー情報",
+            `  ・居宅支援事業所 : ${officeName}`,
+            `  ・担当ケアマネ名 : ${cmName} 様`,
+            "",
+            "■ 利用者情報",
+            `  ・利用者氏名     : ${userName} 様`,
+            "=========================================",
+            "",
+            "※本メールはシステムから自動生成された仮予約の申請メールです。",
+            "※確定時は施設よりショートメールにて通知いたします。",
+            "ご確認のほど、よろしくお願いいたします。"
+        ];
+
+        const body = bodyLines.join("\r\n");
+        const mailtoUrl = `mailto:${encodeURIComponent(activeEmailTo)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+        window.location.href = mailtoUrl;
+        closeModal();
+    }
+
+    /**
+     * モーダルを閉じる
+     */
+    function closeModal() {
+        const modal = document.getElementById('reservation-modal');
+        modal.classList.remove('show');
+    }
+
+    /**
+     * 宿泊数・期間空き状況の計算と判定 (セレクトボックス連動)
+     */
+    function calculateNightsFromSelect() {
+        const startStr = activeReservation.date;
+        if (!startStr) return;
+
+        const select = document.getElementById('stay-nights');
+        const nights = parseInt(select.value, 10);
+        if (isNaN(nights)) return;
+
+        const days = nights + 1;
+        const nightsText = `${nights}泊${days}日`;
+
+        // 退所予定日の計算
+        const start = new Date(startStr);
+        const end = new Date(start);
+        end.setDate(start.getDate() + nights);
+
+        const yyyy = end.getFullYear();
+        const mm = String(end.getMonth() + 1).padStart(2, '0');
+        const dd = String(end.getDate()).padStart(2, '0');
+        const endDateStr = `${yyyy}-${mm}-${dd}`;
+        activeReservation.endDate = endDateStr; // メール送信時に利用
+
+        // 画面表示の更新
+        document.getElementById('end-date-display').textContent = `退所予定日：${yyyy}年${mm}月${dd}日`;
+
+        // 期間内の空き状況チェック（退所日当日まで ＝ nights + 1 日間）
+        let currentDate = new Date(start);
+        let hasNg = false;
+        let hasWarn = false;
+
+        for (let i = 0; i <= nights; i++) {
+            const loopY = currentDate.getFullYear();
+            const loopM = String(currentDate.getMonth() + 1).padStart(2, '0');
+            const loopD = String(currentDate.getDate()).padStart(2, '0');
+            const loopDateStr = `${loopY}-${loopM}-${loopD}`;
+
+            const statusInfo = getAvailabilityStatus(loopDateStr);
+            if (statusInfo.status === 'ng') {
+                hasNg = true;
+            } else if (statusInfo.status === 'warn') {
+                hasWarn = true;
+            }
+
+            // 次の日に進む
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        // 希望タイプの更新 (期間中に要相談の日が1日でもあれば要相談とする)
+        let overallType = '通常';
+        if (hasWarn) {
+            overallType = '要相談';
+        }
+        activeReservation.type = overallType;
+        document.getElementById('info-type').textContent = overallType;
+
+        // 警告エリアの制御
+        const warnNotice = document.getElementById('modal-warn-notice');
+        if (overallType === '要相談') {
+            warnNotice.style.display = 'inline';
+        } else {
+            warnNotice.style.display = 'none';
+        }
+
+        // 満床（空きなし）が含まれる場合の警告表示
+        const periodWarn = document.getElementById('period-warn-notice');
+        if (hasNg) {
+            periodWarn.style.display = 'block';
+        } else {
+            periodWarn.style.display = 'none';
+        }
+    }
+
+    /**
+     * フォーム送信処理（ショートメール(SMS)の自動作成・起動）
+     */
+    function handleFormSubmit(event) {
+        event.preventDefault();
+
+        // 携帯番号が未設定の場合はアラート
+        if (!activeSmsTo) {
+            alert("仮予約を送信するための『施設の携帯電話番号』が設定されていません。\n\n画面右下の「⚙ 管理者設定」ボタンを押し、暗証番号(tokiwa8899)を入力して、通知を受け取る携帯電話番号を設定してください。");
+            return;
+        }
+
+        const officeName = document.getElementById('office-name').value.trim();
+        const cmName = document.getElementById('cm-name').value.trim();
+        const userName = document.getElementById('user-name').value.trim();
+
+        if (!officeName || !cmName || !userName) {
+            alert('すべての必須項目を入力してください。');
+            return;
+        }
+
+        // 開始日のフォーマット
+        const dateParts = activeReservation.date.split('-');
+        const formattedDate = `${dateParts[0]}年${dateParts[1]}月${dateParts[2]}日`;
+
+        // 退所日のフォーマット
+        const endDateParts = activeReservation.endDate.split('-');
+        const formattedEndDate = `${endDateParts[0]}年${endDateParts[1]}月${endDateParts[2]}日`;
+
+        const select = document.getElementById('stay-nights');
+        const nightsText = select.options[select.selectedIndex].text;
+
+        // ショートメール本文の組み立て (全角70文字前後で簡潔に)
+        const smsBody = 
+            `【ショートステイ仮予約申請】\n` +
+            `希望期間:${formattedDate}〜${formattedEndDate} (${nightsText})\n` +
+            `区分:${activeReservation.type}\n` +
+            `事業所:${officeName}\n` +
+            `ケアマネ:${cmName}様\n` +
+            `利用者:${userName}様`;
+
+        // スマートフォンのOS判定 (iOSとAndroidで区切り文字が異なる)
+        const ua = navigator.userAgent.toLowerCase();
+        let smsUrl = "";
+        
+        if (ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1) {
+            // iOS: 区切り文字が &
+            smsUrl = `sms:${activeSmsTo}&body=${encodeURIComponent(smsBody)}`;
+        } else {
+            // Androidやその他: 区切り文字が ?
+            smsUrl = `sms:${activeSmsTo}?body=${encodeURIComponent(smsBody)}`;
+        }
+
+        // メッセージアプリを起動
+        window.location.href = smsUrl;
+
+        // モーダルを閉じる
+        closeModal();
+    }
+</script>
+
+</body>
+</html>
