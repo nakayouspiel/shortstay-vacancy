@@ -1498,99 +1498,7 @@
         }
     }
 
-    /**
-     * フォーム送信処理（PCならメール起動、スマホならショートメール(SMS)起動のハイブリッド自動切替）
-     */
-    function handleFormSubmit(event) {
-        event.preventDefault();
 
-        const officeName = document.getElementById('office-name').value.trim();
-        const cmName = document.getElementById('cm-name').value.trim();
-        const userName = document.getElementById('user-name').value.trim();
-
-        if (!officeName || !cmName || !userName) {
-            alert('すべての必須項目を入力してください。');
-            return;
-        }
-
-        // 開始日のフォーマット
-        const dateParts = activeReservation.date.split('-');
-        const formattedDate = `${dateParts[0]}年${dateParts[1]}月${dateParts[2]}日`;
-
-        // 退所日のフォーマット
-        const endDateParts = activeReservation.endDate.split('-');
-        const formattedEndDate = `${endDateParts[0]}年${endDateParts[1]}月${endDateParts[2]}日`;
-
-        const select = document.getElementById('stay-nights');
-        const nightsText = select.options[select.selectedIndex].text;
-
-        // モバイルデバイス判定
-        const ua = navigator.userAgent.toLowerCase();
-        const isMobile = /android|iphone|ipad|ipod/i.test(ua);
-
-        // 1. スマホからのアクセスで、かつSMS宛先が設定されている場合 ➡ ショートメール（SMS）起動
-        if (isMobile && activeSmsTo) {
-            // ショートメール本文の組み立て (全角70文字前後で簡潔に)
-            const smsBody = 
-                `【ショートステイ仮予約申請】\n` +
-                `希望期間:${formattedDate}〜${formattedEndDate} (${nightsText})\n` +
-                `区分:${activeReservation.type}\n` +
-                `事業所:${officeName}\n` +
-                `ケアマネ:${cmName}様\n` +
-                `利用者:${userName}様`;
-
-            let smsUrl = "";
-            if (ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1) {
-                // iOS: 区切り文字が &
-                smsUrl = `sms:${activeSmsTo}&body=${encodeURIComponent(smsBody)}`;
-            } else {
-                // Android等: 区切り文字が ?
-                smsUrl = `sms:${activeSmsTo}?body=${encodeURIComponent(smsBody)}`;
-            }
-
-            window.location.href = smsUrl;
-            closeModal();
-            return;
-        }
-
-        // 2. PCからのアクセス、またはスマホで電話番号未設定の場合 ➡ メール（mailto）起動
-        if (!activeEmailTo) {
-            alert("仮予約を送信するための『通知用メールアドレス』が設定されていません。\n\n画面右下の「⚙ 管理者設定」ボタンを押し、暗証番号(tokiwa8899)を入力して、通知を受け取るメールアドレスを設定してください。");
-            return;
-        }
-
-        const subject = `【仮予約申請】ショートステイ利用希望（${formattedDate}〜${formattedEndDate}）`;
-        const bodyLines = [
-            `ショートステイ担当者様`,
-            "",
-            "いつもお世話になっております。",
-            "以下の通り、ショートステイの仮予約申請を行います。",
-            "",
-            "=========================================",
-            "■ 希望内容",
-            `  ・利用開始日 : ${formattedDate}`,
-            `  ・退所希望日 : ${formattedEndDate} (${nightsText})`,
-            `  ・希望タイプ : ${activeReservation.type}`,
-            "",
-            "■ ケアマネジャー情報",
-            `  ・居宅支援事業所 : ${officeName}`,
-            `  ・担当ケアマネ名 : ${cmName} 様`,
-            "",
-            "■ 利用者情報",
-            `  ・利用者氏名     : ${userName} 様`,
-            "=========================================",
-            "",
-            "※本メールはシステムから自動生成された仮予約の申請メールです。",
-            "※確定時は施設よりショートメールにて通知いたします。",
-            "ご確認のほど、よろしくお願いいたします。"
-        ];
-
-        const body = bodyLines.join("\r\n");
-        const mailtoUrl = `mailto:${encodeURIComponent(activeEmailTo)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-        window.location.href = mailtoUrl;
-        closeModal();
-    }
 
     /**
      * モーダルを閉じる
@@ -1707,7 +1615,7 @@
             `希望期間:${formattedDate}〜${formattedEndDate} (${nightsText})\n` +
             `区分:${activeReservation.type}\n` +
             `事業所:${officeName}\n` +
-            `ケアマネ:${cmName}様\n` +
+            `ケアマネ:${cmName}\n` +
             `利用者:${userName}様`;
 
         // スマートフォンのOS判定 (iOSとAndroidで区切り文字が異なる)
