@@ -133,15 +133,6 @@
             border-radius: 20px;
             border: 1px solid var(--border-color);
             letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .facility-logo {
-            height: 20px;
-            width: auto;
-            object-fit: contain;
         }
 
         h1 {
@@ -265,11 +256,12 @@
             flex-direction: column;
             justify-content: space-between;
             background-color: #fff;
-            transition: background-color 0.2s;
+            transition: all 0.2s ease;
         }
 
         .day-cell:hover {
             background-color: #fafbfd;
+            box-shadow: inset 0 0 0 1px var(--primary-color);
         }
 
         .day-cell:nth-child(7n) {
@@ -292,6 +284,7 @@
             align-items: center;
             justify-content: center;
             border-radius: 50%;
+            transition: all 0.2s ease;
         }
 
         /* 土日のカレンダー背景調整 */
@@ -300,6 +293,25 @@
         .day-cell.sun .day-number { color: #ef4444; }
         .day-cell.sat .day-number { color: #3b82f6; }
 
+        /* 今日の日付のハイライト */
+        .day-cell.today {
+            box-shadow: inset 0 0 0 2px var(--primary-color);
+            background-color: #eff6ff;
+        }
+        .day-cell.today .day-number {
+            background-color: var(--primary-color);
+            color: white !important;
+        }
+
+        /* 満床（NG）セルの背景 */
+        .day-cell.is-ng {
+            background-color: #f8fafc;
+            background-image: repeating-linear-gradient(45deg, #f8fafc, #f8fafc 10px, #f1f5f9 10px, #f1f5f9 20px);
+        }
+        .day-cell.is-ng:hover {
+            box-shadow: none; /* 満床セルはホバー枠線をださない */
+        }
+
         /* 通常・入院統合ボタン */
         .btn-status {
             width: 100%;
@@ -307,59 +319,62 @@
             flex-direction: column; /* 上下に配置する */
             align-items: center;
             justify-content: center;
-            padding: 6px 2px;
+            padding: 8px 4px;
             border: 1px solid transparent;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 0.85rem;
-            font-weight: 700;
+            font-weight: 800;
             text-align: center;
             cursor: pointer;
-            transition: all 0.2s ease;
-            min-height: 48px; /* モバイルのタッチターゲット基準 */
-            gap: 2px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 52px; /* タッチターゲット基準 */
+            gap: 3px;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         }
 
         .status-symbol {
-            font-size: 1.1rem; /* 記号を大きく太く */
+            font-size: 1.25rem; /* 記号を大きく太く */
             line-height: 1;
+            font-family: inherit;
         }
 
         .status-subtext {
-            font-size: 0.65rem; /* ステータスや残数を極小にして収める */
-            font-weight: 500;
-            opacity: 0.85;
+            font-size: 0.7rem; /* ステータスや残数 */
+            font-weight: 700;
+            letter-spacing: 0.5px;
             white-space: nowrap;
         }
 
         /* ボタン状態別スタイル */
         .btn-status.ok {
-            background-color: var(--status-ok-bg);
-            color: var(--status-ok-text);
-            border-color: var(--status-ok-border);
+            background-color: #ecfdf5;
+            color: #15803d;
+            border-color: #a7f3d0;
         }
         .btn-status.ok:hover {
             background-color: #d1fae5;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px -1px rgba(4, 120, 87, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px 0 rgba(21, 128, 61, 0.15);
         }
 
         .btn-status.warn {
-            background-color: var(--status-warn-bg);
-            color: var(--status-warn-text);
-            border-color: var(--status-warn-border);
+            background-color: #fff7ed;
+            color: #c2410c;
+            border-color: #fed7aa;
         }
         .btn-status.warn:hover {
             background-color: #ffedd5;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px -1px rgba(194, 65, 12, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px 0 rgba(194, 65, 12, 0.15);
         }
 
         .btn-status.ng {
-            background-color: var(--status-ng-bg);
-            color: var(--status-ng-text);
-            border-color: var(--status-ng-border);
+            background-color: #f1f5f9;
+            color: #94a3b8;
+            border-color: #cbd5e1;
             cursor: not-allowed;
             pointer-events: none; /* クリック不可 */
+            box-shadow: none;
         }
 
         /* モーダルダイアログ */
@@ -759,10 +774,7 @@
     </div>
 
     <header>
-        <div class="facility-header-tag">
-            <img src="logo.png" alt="ときわ苑 ロゴ" class="facility-logo">
-            特別養護老人ホーム ときわ苑
-        </div>
+        <div class="facility-header-tag">特別養護老人ホーム ときわ苑</div>
         <h1 id="facility-name">ショートステイ 空き状況カレンダー</h1>
         <p class="subtitle">空き状況をひと目で確認</p>
         <div class="size-selector-container">
@@ -1267,6 +1279,14 @@
         }
 
         // 日付セルの挿入
+        // 今日の日付文字列を生成 (タイムゾーンに配慮して日本時間の YYYY-MM-DD に揃える)
+        const todayObj = new Date();
+        const tYear = todayObj.getFullYear();
+        const tMonth = String(todayObj.getMonth() + 1).padStart(2, '0');
+        const tDate = String(todayObj.getDate()).padStart(2, '0');
+        const todayStr = `${tYear}-${tMonth}-${tDate}`;
+
+        // 日付セルの挿入
         for (let day = 1; day <= lastDate; day++) {
             const cellDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             const dayOfWeek = new Date(year, month, day).getDay();
@@ -1275,6 +1295,11 @@
             cell.className = 'day-cell';
             if (dayOfWeek === 0) cell.classList.add('sun');
             if (dayOfWeek === 6) cell.classList.add('sat');
+            
+            // 今日の日付ハイライト
+            if (cellDateStr === todayStr) {
+                cell.classList.add('today');
+            }
 
             // 日付表示
             const dayNum = document.createElement('div');
@@ -1284,6 +1309,11 @@
 
             // 空き状況の判定とボタン生成
             const statusInfo = getAvailabilityStatus(cellDateStr);
+
+            // 満床セルの背景パターン用のクラス
+            if (statusInfo.status === 'ng') {
+                cell.classList.add('is-ng');
+            }
 
             const statusBtn = document.createElement('button');
             statusBtn.type = 'button';
