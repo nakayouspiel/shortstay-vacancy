@@ -215,6 +215,9 @@
             overflow: hidden;
             background: var(--card-bg);
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+            /* 見切れ対策: 横スクロール可能にする */
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .month-header {
@@ -649,6 +652,14 @@
                 min-height: 38px;
             }
 
+            /* 文字サイズ大・中の場合、セルが潰れるのを防ぐため最小幅を確保しスクロール可能にする */
+            html.size-large .calendar-grid {
+                min-width: 640px;
+            }
+            html.size-medium .calendar-grid {
+                min-width: 500px;
+            }
+
             .admin-row {
                 flex-direction: column;
                 align-items: stretch;
@@ -873,11 +884,45 @@
 </div>
 
 <script>
-    // Service Workerの登録（PWA化）
+    // Service Workerの登録（PWA化＆自動更新の強制化）
     if ('serviceWorker' in navigator) {
+        let refreshing = false;
+        // 新しいサービスワーカーがアクティブ化されたら自動リロードして反映
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+                window.location.reload();
+                refreshing = true;
+            }
+        });
+
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./service-worker.js')
-                .then(reg => console.log('Service Worker registered', reg))
+                .then(reg => {
+                    console.log('Service Worker registered', reg);
+                    
+                    // 待機中の新しいサービスワーカーがあれば、即座に適用させるメッセージを送る
+                    if (reg.waiting) {
+                        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                    }
+
+                    // ページ起動時にバックグラウンドで最新バージョンがあるか確認を走らせる
+                    reg.update();
+
+                    // 新しいサービスワーカーのインストール・待機開始を検知
+                    reg.onupdatefound = () => {
+                        const installingWorker = reg.installing;
+                        if (installingWorker) {
+                            installingWorker.onstatechange = () => {
+                                if (installingWorker.state === 'installed') {
+                                    if (navigator.serviceWorker.controller) {
+                                        // 待機状態になったらSKIP_WAITINGを送り強制適用させる
+                                        installingWorker.postMessage({ type: 'SKIP_WAITING' });
+                                    }
+                                }
+                            };
+                        }
+                    };
+                })
                 .catch(err => console.error('Service Worker registration failed', err));
         });
     }

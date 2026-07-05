@@ -33,21 +33,28 @@ self.addEventListener('activate', event => {
   );
 });
 
-// フェッチ時にキャッシュファーストまたはネットワーク経由で返す
+// フェッチ時にネットワークファースト（オンライン時は常に最新を取得、オフライン時はキャッシュ）
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request)
-      .then(cachedResponse => {
-        if (cachedResponse) {
-          // キャッシュから返しつつ、バックグラウンドで最新データを取得してキャッシュを更新（Stale-While-Revalidate）
-          fetch(event.request).then(networkResponse => {
-            if (networkResponse.status === 200) {
-              caches.open(CACHE_NAME).then(cache => cache.put(event.request, networkResponse));
-            }
-          }).catch(() => {/* オフライン時のエラー無視 */});
-          return cachedResponse;
+    fetch(event.request)
+      .then(networkResponse => {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseToCache);
+          });
         }
-        return fetch(event.request);
+        return networkResponse;
+      })
+      .catch(() => {
+        return caches.match(event.request);
       })
   );
+});
+
+// メッセージ受信時に skipWaiting を実行する（即時更新用）
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
