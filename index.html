@@ -954,6 +954,13 @@
      * 1. 各種設定および定数
      ************************************************************/
     
+    // 今日の日付文字列を生成 (タイムゾーンに配慮して日本時間の YYYY-MM-DD に揃える)
+    const todayObj = new Date();
+    const tYear = todayObj.getFullYear();
+    const tMonth = String(todayObj.getMonth() + 1).padStart(2, '0');
+    const tDate = String(todayObj.getDate()).padStart(2, '0');
+    const todayStr = `${tYear}-${tMonth}-${tDate}`;
+
     // 施設名
     const FACILITY_NAME = "ときわ苑ショートステイ";
 
@@ -1279,13 +1286,6 @@
         }
 
         // 日付セルの挿入
-        // 今日の日付文字列を生成 (タイムゾーンに配慮して日本時間の YYYY-MM-DD に揃える)
-        const todayObj = new Date();
-        const tYear = todayObj.getFullYear();
-        const tMonth = String(todayObj.getMonth() + 1).padStart(2, '0');
-        const tDate = String(todayObj.getDate()).padStart(2, '0');
-        const todayStr = `${tYear}-${tMonth}-${tDate}`;
-
         // 日付セルの挿入
         for (let day = 1; day <= lastDate; day++) {
             const cellDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -1345,6 +1345,16 @@
      * 指定された日付の空き状況（統合ボタンの表示）を判定して返す
      */
     function getAvailabilityStatus(dateStr) {
+        // 今日以前（過去）の日付は一律で満床（予約不可）として扱う
+        if (dateStr <= todayStr) {
+            return {
+                status: 'ng',
+                symbol: '✕',
+                subtext: '過去',
+                type: ''
+            };
+        }
+
         const data = AVAILABILITY_DATA[dateStr];
         const hospitalLimit = getHospitalLimit(); // 設定された入院枠追加枠数
         
