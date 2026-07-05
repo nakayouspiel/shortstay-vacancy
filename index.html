@@ -133,6 +133,15 @@
             border-radius: 20px;
             border: 1px solid var(--border-color);
             letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .facility-logo {
+            height: 20px;
+            width: auto;
+            object-fit: contain;
         }
 
         h1 {
@@ -750,7 +759,10 @@
     </div>
 
     <header>
-        <div class="facility-header-tag">特別養護老人ホーム ときわ苑</div>
+        <div class="facility-header-tag">
+            <img src="logo.png" alt="ときわ苑 ロゴ" class="facility-logo">
+            特別養護老人ホーム ときわ苑
+        </div>
         <h1 id="facility-name">ショートステイ 空き状況カレンダー</h1>
         <p class="subtitle">空き状況をひと目で確認</p>
         <div class="size-selector-container">
@@ -931,7 +943,7 @@
      ************************************************************/
     
     // 施設名
-    const FACILITY_NAME = "ときわ苑ショートステイ空き状況";
+    const FACILITY_NAME = "ときわ苑ショートステイ";
 
     // デフォルトの設定（データに記載がない日付の初期値）
     const DEFAULT_REGULAR_LIMIT = 8;     // 通常枠の最大数
