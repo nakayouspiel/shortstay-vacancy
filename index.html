@@ -204,24 +204,22 @@
         .info-toggle-status {
             display: flex;
             align-items: center;
-            gap: 8px;
-            color: var(--primary-color);
+            gap: 6px;
+            color: #64748b; /* 落ち着いたスレートグレーに変更 */
             font-size: 0.8rem;
             font-weight: 700;
         }
 
         .info-toggle-action-text {
-            background-color: #eff6ff;
-            border: 1px solid #bfdbfe;
-            padding: 4px 10px;
-            border-radius: 6px;
+            background-color: transparent; /* 背景色を廃止しシンプルに */
+            border: none;
+            padding: 0;
+            color: inherit;
             transition: all 0.2s;
         }
 
         .info-toggle-btn:hover .info-toggle-action-text {
-            background-color: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
+            color: var(--primary-color); /* ホバー時はテキストの色だけ青に変える上品なフィードバック */
         }
 
         .info-toggle-arrow {
@@ -1017,9 +1015,9 @@
     <!-- 折りたたみ可能なご利用案内（アコーディオン） -->
     <div class="info-accordion" id="info-accordion">
         <button type="button" class="info-toggle-btn" onclick="toggleInfoPanel()" aria-expanded="false" id="btn-info-toggle">
-            <span class="info-toggle-title">ℹ️ ご利用案内・凡例 (予約のしかた)</span>
+            <span class="info-toggle-title">ℹ️ ご利用案内・凡例</span>
             <div class="info-toggle-status">
-                <span class="info-toggle-action-text">クリックで開く</span>
+                <span class="info-toggle-action-text">開く</span>
                 <span class="info-toggle-arrow">▼</span>
             </div>
         </button>
@@ -1274,11 +1272,11 @@
         if (isExpanded) {
             accordion.classList.remove('open');
             btn.setAttribute('aria-expanded', 'false');
-            actionText.textContent = 'クリックで開く';
+            actionText.textContent = '開く';
         } else {
             accordion.classList.add('open');
             btn.setAttribute('aria-expanded', 'true');
-            actionText.textContent = 'クリックで閉じる';
+            actionText.textContent = '閉じる';
         }
     }
 
