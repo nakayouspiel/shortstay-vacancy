@@ -284,7 +284,7 @@ def main():
                         last_mtime = current_mtime
                     else:
                         print("解析に失敗したため、ファイル再更新時に再トライします。")
-            time.sleep(2)
+            time.sleep(5)
     except KeyboardInterrupt:
         print("\n監視プログラムを終了しました。")
 
