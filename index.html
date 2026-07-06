@@ -47,13 +47,13 @@
         }
 
         html {
-            --font-scale: 1.0;
+            --font-scale: 1.2;
             font-size: calc(16px * var(--font-scale));
             transition: font-size 0.2s ease; /* なめらかにサイズ変更する */
         }
         html.size-small { --font-scale: 1.0; }
-        html.size-medium { --font-scale: 1.12; } /* 中サイズ (1.12倍) */
-        html.size-large { --font-scale: 1.25; }  /* 大サイズ (1.25倍) */
+        html.size-medium { --font-scale: 1.2; }   /* 中サイズ (1.20倍) */
+        html.size-large { --font-scale: 1.45; }  /* 大サイズ (1.45倍でしっかり大きく) */
 
         body {
             font-family: var(--font-family);
@@ -633,41 +633,41 @@
             }
 
             .day-cell {
-                height: 72px; /* 高さを完全に固定 */
+                height: 78px; /* 高さを78pxに固定（少しゆとりを持たせて大きな文字に対応） */
                 padding: 3px 1px; /* セル内の左右余白を極限まで小さく */
             }
 
             .day-number {
                 font-size: 0.8rem;
-                margin-bottom: 4px;
+                margin-bottom: 2px;
                 width: 20px;
                 height: 20px;
             }
 
             .btn-status {
-                padding: 4px 0px; /* 左右パディングを0にして文字崩れ・はみ出しを防ぐ */
+                padding: 3px 0px; /* 左右パディングを0にして文字崩れ・はみ出しを防ぐ */
                 font-size: 0.7rem;
                 border-radius: 5px;
-                min-height: 34px;
-                gap: 1px;
+                min-height: 36px;
+                gap: 0px;
             }
 
             .btn-status .status-symbol {
-                font-size: 1.05rem; /* 記号サイズを調整 */
+                font-size: 1.1rem; /* 記号サイズを少し大きくして見やすく */
             }
 
             .btn-status .status-subtext {
-                font-size: 0.58rem; /* 文字サイズ大のときでも絶対に溢れないように小さく */
-                letter-spacing: -0.2px; /* 文字を少し詰め気味にしてはみ出しを防ぐ */
+                font-size: 0.6rem; /* 文字サイズ大のときでも溢れない上限サイズ */
+                letter-spacing: -0.3px; /* 少し詰め気味にしてはみ出しを防ぐ */
             }
 
             /* スマホで文字サイズ大・中が選択されたとき、カレンダーが画面外にはみ出るのを防ぐため、
-               文字の拡大率の上限をスマホの物理的な幅に合わせてマイルドに抑制する */
+               拡大率の上限をスマホの物理幅に合わせて最適化 */
             html.size-large {
-                --font-scale: 1.1;
+                --font-scale: 1.25; /* モバイル大を 1.25倍に引き上げ */
             }
             html.size-medium {
-                --font-scale: 1.05;
+                --font-scale: 1.12; /* モバイル中を 1.12倍に引き上げ */
             }
 
             .admin-row {
