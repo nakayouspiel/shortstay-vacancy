@@ -240,9 +240,9 @@
 
         /* 開いている状態のクラス */
         .info-accordion.open .info-panel-content {
-            max-height: 500px; /* 凡例を削除したので高さを縮小 */
-            transition: max-height 0.4s ease-in;
-            padding: 20px;
+            max-height: 1000px; /* 凡例復活のため高さを拡張 */
+            transition: max-height 0.5s ease-in;
+            padding: 24px;
             border-top: 1px solid var(--border-color); /* 境界線を表示 */
         }
 
@@ -279,6 +279,56 @@
             background: #fff;
             border: 1px solid var(--border-color);
             font-size: 0.8rem;
+        }
+
+        .legend-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .legend-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .legend-row span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border: 1px solid transparent;
+        }
+        
+        .legend-row .badge-ok {
+            background-color: #ecfdf5;
+            color: #15803d;
+            border-color: #a7f3d0;
+        }
+        .legend-row .badge-warn {
+            background-color: #fff7ed;
+            color: #c2410c;
+            border-color: #fed7aa;
+        }
+        .legend-row .badge-ng {
+            background-color: #f1f5f9;
+            color: #94a3b8;
+            border-color: #cbd5e1;
+        }
+
+        .legend-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+        
+        .legend-desc strong {
+            color: var(--text-main);
         }
 
         /* 警告・注意書きバー */
@@ -780,6 +830,11 @@
                 padding: 12px 16px;
             }
 
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
             .day-cell {
                 height: 84px; /* 高さを84pxに固定（フォントサイズ拡大に合わせて拡張） */
                 padding: 4px 1px; /* セル内の左右余白を極限まで小さく */
@@ -967,12 +1022,30 @@
             </div>
         </button>
         <div class="info-panel-content" id="info-panel-content">
-            <div class="info-step-box">
-                <div class="info-title">📅 予約のしかた</div>
-                <div class="info-step-text">空きがある日付の <span>〇</span> または <span>△</span> ボタンをクリックすると、仮予約の申請画面が開きます。</div>
+            <div class="info-grid">
+                <div class="info-step-box">
+                    <div class="info-title">📅 予約のしかた</div>
+                    <div class="info-step-text">空きがある日付の <span>〇</span> または <span>△</span> ボタンをクリックすると、仮予約の申請画面が開きます。</div>
+                </div>
+                <div class="info-legend-box">
+                    <div class="info-title">💡 記号の見かた</div>
+                    <div class="legend-list">
+                        <div class="legend-row">
+                            <span class="badge-ok">〇</span>
+                            <div class="legend-desc"><strong>空きあり</strong>：通常のお部屋に空室があります。</div>
+                        </div>
+                        <div class="legend-row">
+                            <span class="badge-warn">△</span>
+                            <div class="legend-desc"><strong>要相談</strong>：調整枠。急な入院・退院等で空き状況が変動する場合があります。</div>
+                        </div>
+                        <div class="legend-row">
+                            <span class="badge-ng">✕</span>
+                            <div class="legend-desc"><strong>満床</strong>：お部屋の空きがありません。</div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="info-alert">
-                <span class="alert-icon">⚠️</span>
                 <div class="alert-text">本サイトでの申請はすべて<strong>「仮予約」</strong>となります。調整が整い、予約が確定しましたら、施設より<strong>「ショートメール」</strong>にて確定通知をお送りいたします。</div>
             </div>
         </div>
