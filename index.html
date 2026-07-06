@@ -307,10 +307,9 @@
         /* 最新に更新ボタンのスタイル */
         .refresh-btn-container {
             display: flex;
-            justify-content: flex-end;
-            margin-bottom: 0;
-            margin-top: 0;
-            flex-shrink: 0; /* 横並び時に潰されないようにする */
+            justify-content: flex-end; /* 右寄せ */
+            margin-bottom: 12px;
+            margin-top: -10px; /* カレンダーとの隙間調整 */
         }
 
         .btn-refresh {
@@ -327,8 +326,6 @@
             gap: 6px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             transition: all 0.2s ease;
-            height: 48px; /* アコーディオンのトグルボタンと高さを揃えて綺麗に見せる */
-            box-sizing: border-box;
         }
 
         .btn-refresh:hover {
@@ -771,15 +768,8 @@
                 font-size: 1.5rem;
             }
 
-            .top-controls-container {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 12px;
-                margin-bottom: 20px;
-            }
-
             .info-accordion {
-                width: 100%;
+                margin-bottom: 20px;
             }
 
             .info-accordion.open .info-panel-content {
@@ -788,16 +778,6 @@
 
             .info-toggle-btn {
                 padding: 12px 16px;
-            }
-
-            .refresh-btn-container {
-                justify-content: flex-end;
-            }
-
-            .btn-refresh {
-                height: 42px; /* モバイル向けに少し高さを抑える */
-                padding: 6px 12px;
-                font-size: 0.8rem;
             }
 
             .day-cell {
@@ -977,35 +957,32 @@
         </div>
     </header>
 
-    <!-- 上部コントロールエリア (ご利用案内と更新ボタンの横並び) -->
-    <div class="top-controls-container">
-        <!-- 折りたたみ可能なご利用案内（アコーディオン） -->
-        <div class="info-accordion" id="info-accordion">
-            <button type="button" class="info-toggle-btn" onclick="toggleInfoPanel()" aria-expanded="false" id="btn-info-toggle">
-                <span class="info-toggle-title">ℹ️ ご利用案内</span>
-                <div class="info-toggle-status">
-                    <span class="info-toggle-action-text">開く</span>
-                    <span class="info-toggle-arrow">▼</span>
-                </div>
-            </button>
-            <div class="info-panel-content" id="info-panel-content">
-                <div class="info-step-box">
-                    <div class="info-title">📅 予約のしかた</div>
-                    <div class="info-step-text">空きがある日付の <span>〇</span> または <span>△</span> ボタンをクリックすると、仮予約の申請画面が開きます。</div>
-                </div>
-                <div class="info-alert">
-                    <span class="alert-icon">⚠️</span>
-                    <div class="alert-text">本サイトでの申請はすべて<strong>「仮予約」</strong>となります。調整が整い、予約が確定しましたら、施設より<strong>「ショートメール」</strong>にて確定通知をお送りいたします。</div>
-                </div>
+    <!-- 折りたたみ可能なご利用案内（アコーディオン） -->
+    <div class="info-accordion" id="info-accordion">
+        <button type="button" class="info-toggle-btn" onclick="toggleInfoPanel()" aria-expanded="false" id="btn-info-toggle">
+            <span class="info-toggle-title">ℹ️ ご利用案内</span>
+            <div class="info-toggle-status">
+                <span class="info-toggle-action-text">開く</span>
+                <span class="info-toggle-arrow">▼</span>
+            </div>
+        </button>
+        <div class="info-panel-content" id="info-panel-content">
+            <div class="info-step-box">
+                <div class="info-title">📅 予約のしかた</div>
+                <div class="info-step-text">空きがある日付の <span>〇</span> または <span>△</span> ボタンをクリックすると、仮予約の申請画面が開きます。</div>
+            </div>
+            <div class="info-alert">
+                <span class="alert-icon">⚠️</span>
+                <div class="alert-text">本サイトでの申請はすべて<strong>「仮予約」</strong>となります。調整が整い、予約が確定しましたら、施設より<strong>「ショートメール」</strong>にて確定通知をお送りいたします。</div>
             </div>
         </div>
+    </div>
 
-        <!-- 最新に更新ボタン -->
-        <div class="refresh-btn-container">
-            <button type="button" id="btn-refresh" class="btn-refresh" onclick="handleRefresh()">
-                <span class="refresh-icon">🔄</span>最新に更新
-            </button>
-        </div>
+    <!-- 最新に更新ボタン -->
+    <div class="refresh-btn-container">
+        <button type="button" id="btn-refresh" class="btn-refresh" onclick="handleRefresh()">
+            <span class="refresh-icon">🔄</span>最新に更新
+        </button>
     </div>
 
     <!-- カレンダー表示エリア -->
