@@ -157,17 +157,99 @@
             }
         }
 
-        /* ご利用案内のモダン化 */
-        .info-panel {
+        /* 折りたたみアコーディオン（ご利用案内） */
+        .info-accordion {
             background-color: #f8fafc;
             border: 1px solid var(--border-color);
-            padding: 24px;
-            margin-bottom: 30px;
             border-radius: 12px;
+            margin-bottom: 30px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .info-accordion:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04);
+        }
+
+        /* トグルボタン（耐バカ性設計：押しやすさと分かりやすさ） */
+        .info-toggle-btn {
+            width: 100%;
+            background-color: #f1f5f9; /* 押しボタン感のある少し濃いめのグレーベージュ */
+            border: none;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            text-align: left;
+            font-family: inherit;
+            transition: background-color 0.2s;
+        }
+
+        .info-toggle-btn:hover {
+            background-color: #e2e8f0; /* ホバーで色を濃くしてフィードバック */
+        }
+
+        .info-toggle-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-toggle-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary-color);
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .info-toggle-action-text {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 4px 10px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .info-toggle-btn:hover .info-toggle-action-text {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .info-toggle-arrow {
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        /* 開閉コンテンツ部分 */
+        .info-panel-content {
+            max-height: 0; /* アニメーションで開閉 */
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0, 1, 0, 1); /* 高速かつ滑らかなスライドアニメーション */
+            padding: 0 20px; /* 閉じている時は上下パディングを0に */
             display: flex;
             flex-direction: column;
             gap: 20px;
+        }
+
+        /* 開いている状態のクラス */
+        .info-accordion.open .info-panel-content {
+            max-height: 1000px; /* 十分な高さ */
+            transition: max-height 0.5s ease-in;
+            padding: 24px;
+            border-top: 1px solid var(--border-color); /* 境界線を表示 */
+        }
+
+        .info-accordion.open .info-toggle-arrow {
+            transform: rotate(180deg); /* 矢印を上向きに回転 */
         }
 
         .info-grid {
@@ -738,9 +820,16 @@
                 font-size: 1.5rem;
             }
 
-            .info-panel {
-                padding: 16px;
+            .info-accordion {
                 margin-bottom: 20px;
+            }
+
+            .info-accordion.open .info-panel-content {
+                padding: 16px;
+            }
+
+            .info-toggle-btn {
+                padding: 12px 16px;
             }
 
             .info-grid {
@@ -925,33 +1014,43 @@
         </div>
     </header>
 
-    <div class="info-panel">
-        <div class="info-grid">
-            <div class="info-step-box">
-                <div class="info-title">📅 予約のしかた</div>
-                <div class="info-step-text">空きがある日付の <span>〇</span> または <span>△</span> ボタンをクリックすると、仮予約の申請画面が開きます。</div>
+    <!-- 折りたたみ可能なご利用案内（アコーディオン） -->
+    <div class="info-accordion" id="info-accordion">
+        <button type="button" class="info-toggle-btn" onclick="toggleInfoPanel()" aria-expanded="false" id="btn-info-toggle">
+            <span class="info-toggle-title">ℹ️ ご利用案内・凡例 (予約のしかた)</span>
+            <div class="info-toggle-status">
+                <span class="info-toggle-action-text">クリックで開く</span>
+                <span class="info-toggle-arrow">▼</span>
             </div>
-            <div class="info-legend-box">
-                <div class="info-title">💡 記号の見かた</div>
-                <div class="legend-list">
-                    <div class="legend-row">
-                        <span class="badge-ok">〇</span>
-                        <div class="legend-desc"><strong>空きあり</strong>：通常のお部屋に空室があります。</div>
-                    </div>
-                    <div class="legend-row">
-                        <span class="badge-warn">△</span>
-                        <div class="legend-desc"><strong>要相談</strong>：調整枠。急な入院・退院等で空き状況が変動する場合があります。</div>
-                    </div>
-                    <div class="legend-row">
-                        <span class="badge-ng">✕</span>
-                        <div class="legend-desc"><strong>満床</strong>：お部屋の空きがありません。</div>
+        </button>
+        <div class="info-panel-content" id="info-panel-content">
+            <div class="info-grid">
+                <div class="info-step-box">
+                    <div class="info-title">📅 予約のしかた</div>
+                    <div class="info-step-text">空きがある日付の <span>〇</span> または <span>△</span> ボタンをクリックすると、仮予約の申請画面が開きます。</div>
+                </div>
+                <div class="info-legend-box">
+                    <div class="info-title">💡 記号の見かた</div>
+                    <div class="legend-list">
+                        <div class="legend-row">
+                            <span class="badge-ok">〇</span>
+                            <div class="legend-desc"><strong>空きあり</strong>：通常のお部屋に空室があります。</div>
+                        </div>
+                        <div class="legend-row">
+                            <span class="badge-warn">△</span>
+                            <div class="legend-desc"><strong>要相談</strong>：調整枠。急な入院・退院等で空き状況が変動する場合があります。</div>
+                        </div>
+                        <div class="legend-row">
+                            <span class="badge-ng">✕</span>
+                            <div class="legend-desc"><strong>満床</strong>：お部屋の空きがありません。</div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="info-alert">
-            <span class="alert-icon">⚠️</span>
-            <div class="alert-text">本サイトでの申請はすべて<strong>「仮予約」</strong>となります。調整が整い、予約が確定しましたら、施設より<strong>「ショートメール」</strong>にて確定通知をお送りいたします。</div>
+            <div class="info-alert">
+                <span class="alert-icon">⚠️</span>
+                <div class="alert-text">本サイトでの申請はすべて<strong>「仮予約」</strong>となります。調整が整い、予約が確定しましたら、施設より<strong>「ショートメール」</strong>にて確定通知をお送りいたします。</div>
+            </div>
         </div>
     </div>
 
@@ -1160,6 +1259,26 @@
             });
         } else {
             window.location.reload();
+        }
+    }
+
+    /**
+     * ご利用案内の開閉トグル処理
+     */
+    function toggleInfoPanel() {
+        const accordion = document.getElementById('info-accordion');
+        const btn = document.getElementById('btn-info-toggle');
+        const actionText = btn.querySelector('.info-toggle-action-text');
+        const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+
+        if (isExpanded) {
+            accordion.classList.remove('open');
+            btn.setAttribute('aria-expanded', 'false');
+            actionText.textContent = 'クリックで開く';
+        } else {
+            accordion.classList.add('open');
+            btn.setAttribute('aria-expanded', 'true');
+            actionText.textContent = 'クリックで閉じる';
         }
     }
 
