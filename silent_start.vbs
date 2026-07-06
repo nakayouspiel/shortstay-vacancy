@@ -1,3 +1,3 @@
 Set shell = CreateObject("WScript.Shell")
 shell.CurrentDirectory = "C:\Users\tokiw\projects\shortstay-vacancy"
-shell.Run "cmd /c start.bat", 0, false
+shell.Run "python update_vacancy.py", 0, false
