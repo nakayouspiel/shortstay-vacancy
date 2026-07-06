@@ -274,6 +274,54 @@
             font-weight: 500;
         }
 
+        /* 最新に更新ボタンのスタイル */
+        .refresh-btn-container {
+            display: flex;
+            justify-content: flex-end; /* 右寄せ */
+            margin-bottom: 12px;
+            margin-top: -10px; /* カレンダーとの隙間調整 */
+        }
+
+        .btn-refresh {
+            background-color: #fff;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+        }
+
+        .btn-refresh:hover {
+            background-color: #eff6ff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(30, 64, 175, 0.1);
+        }
+
+        .btn-refresh:active {
+            transform: translateY(0);
+        }
+
+        .refresh-icon {
+            font-size: 1rem;
+            transition: transform 0.5s ease;
+        }
+
+        .btn-refresh.loading .refresh-icon {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         /* カレンダー表示エリア */
         .calendar-container {
             display: flex;
@@ -907,6 +955,13 @@
         </div>
     </div>
 
+    <!-- 最新に更新ボタン -->
+    <div class="refresh-btn-container">
+        <button type="button" id="btn-refresh" class="btn-refresh" onclick="handleRefresh()">
+            <span class="refresh-icon">🔄</span>最新に更新
+        </button>
+    </div>
+
     <!-- カレンダー表示エリア -->
     <div id="calendar-area" class="calendar-container">
         <!-- JSで動的にカレンダーが挿入されます -->
@@ -1080,6 +1135,32 @@
     function closePwaBanner() {
         const banner = document.getElementById('pwa-install-banner');
         if (banner) banner.style.display = 'none';
+    }
+
+    /**
+     * 最新に更新ボタンのクリック処理
+     */
+    function handleRefresh() {
+        const btn = document.getElementById('btn-refresh');
+        if (btn) {
+            btn.classList.add('loading');
+            btn.disabled = true;
+        }
+
+        // サービスワーカーのアップデートを明示的にトリガーして強制リロード
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.ready.then(reg => {
+                reg.update().then(() => {
+                    window.location.reload();
+                }).catch(() => {
+                    window.location.reload();
+                });
+            }).catch(() => {
+                window.location.reload();
+            });
+        } else {
+            window.location.reload();
+        }
     }
 
     /************************************************************
