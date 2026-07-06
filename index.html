@@ -248,7 +248,7 @@
         .day-header.sat { color: #3b82f6; }
 
         .day-cell {
-            min-height: 105px;
+            height: 105px;
             border-right: 1px solid var(--border-color);
             border-bottom: 1px solid var(--border-color);
             padding: 8px;
@@ -633,7 +633,7 @@
             }
 
             .day-cell {
-                min-height: 72px; /* 少し高さを抑える */
+                height: 72px; /* 高さを完全に固定 */
                 padding: 3px 1px; /* セル内の左右余白を極限まで小さく */
             }
 
@@ -800,8 +800,8 @@
         <p class="subtitle">空き状況をひと目で確認</p>
         <div class="size-selector-container">
             <span class="size-label">文字サイズ:</span>
-            <button type="button" id="btn-size-small" class="btn-size active" onclick="changeFontSize('small')">小</button>
-            <button type="button" id="btn-size-medium" class="btn-size" onclick="changeFontSize('medium')">中</button>
+            <button type="button" id="btn-size-small" class="btn-size" onclick="changeFontSize('small')">小</button>
+            <button type="button" id="btn-size-medium" class="btn-size active" onclick="changeFontSize('medium')">中</button>
             <button type="button" id="btn-size-large" class="btn-size" onclick="changeFontSize('large')">大</button>
         </div>
     </header>
@@ -1239,7 +1239,7 @@
         document.getElementById('facility-name').textContent = FACILITY_NAME;
 
         // 保存された文字サイズ設定の読み込み
-        const savedSize = localStorage.getItem('tokiwaen_font_size') || 'small';
+        const savedSize = localStorage.getItem('tokiwaen_font_size') || 'medium';
         changeFontSize(savedSize);
 
         // 当月と翌月のカレンダーを描画
