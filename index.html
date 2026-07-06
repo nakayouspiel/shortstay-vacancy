@@ -604,12 +604,14 @@
         /* レスポンシブ対応 (スマホ対応の強化) */
         @media (max-width: 768px) {
             body {
-                padding: 15px 8px;
+                padding: 15px 4px; /* 左右のパディングを削ってカレンダー幅を最大化 */
+                overflow-x: hidden; /* 画面全体の横スクロールを防ぐ */
             }
 
             .container {
-                padding: 16px 12px;
+                padding: 16px 8px; /* 左右のパディングを削ってカレンダー幅を最大化 */
                 border-radius: 12px;
+                overflow-x: hidden;
             }
 
             h1 {
@@ -631,8 +633,8 @@
             }
 
             .day-cell {
-                min-height: 80px; /* 少し高さを抑えて全体が見えるように */
-                padding: 4px;
+                min-height: 72px; /* 少し高さを抑える */
+                padding: 3px 1px; /* セル内の左右余白を極限まで小さく */
             }
 
             .day-number {
@@ -643,28 +645,29 @@
             }
 
             .btn-status {
-                padding: 4px 1px;
-                font-size: 0.72rem;
-                border-radius: 6px;
-                min-height: 36px;
+                padding: 4px 0px; /* 左右パディングを0にして文字崩れ・はみ出しを防ぐ */
+                font-size: 0.7rem;
+                border-radius: 5px;
+                min-height: 34px;
                 gap: 1px;
             }
 
             .btn-status .status-symbol {
-                font-size: 1.1rem;
+                font-size: 1.05rem; /* 記号サイズを調整 */
             }
 
             .btn-status .status-subtext {
-                font-size: 0.62rem;
+                font-size: 0.58rem; /* 文字サイズ大のときでも絶対に溢れないように小さく */
+                letter-spacing: -0.2px; /* 文字を少し詰め気味にしてはみ出しを防ぐ */
             }
 
             /* スマホで文字サイズ大・中が選択されたとき、カレンダーが画面外にはみ出るのを防ぐため、
                文字の拡大率の上限をスマホの物理的な幅に合わせてマイルドに抑制する */
             html.size-large {
-                --font-scale: 1.12;
+                --font-scale: 1.1;
             }
             html.size-medium {
-                --font-scale: 1.06;
+                --font-scale: 1.05;
             }
 
             .admin-row {
