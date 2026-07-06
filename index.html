@@ -215,9 +215,6 @@
             overflow: hidden;
             background: var(--card-bg);
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
-            /* 見切れ対策: 横スクロール可能にする */
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
         }
 
         .month-header {
@@ -646,18 +643,28 @@
             }
 
             .btn-status {
-                padding: 4px 2px;
-                font-size: 0.75rem;
+                padding: 4px 1px;
+                font-size: 0.72rem;
                 border-radius: 6px;
-                min-height: 38px;
+                min-height: 36px;
+                gap: 1px;
             }
 
-            /* 文字サイズ大・中の場合、セルが潰れるのを防ぐため最小幅を確保しスクロール可能にする */
-            html.size-large .calendar-grid {
-                min-width: 640px;
+            .btn-status .status-symbol {
+                font-size: 1.1rem;
             }
-            html.size-medium .calendar-grid {
-                min-width: 500px;
+
+            .btn-status .status-subtext {
+                font-size: 0.62rem;
+            }
+
+            /* スマホで文字サイズ大・中が選択されたとき、カレンダーが画面外にはみ出るのを防ぐため、
+               文字の拡大率の上限をスマホの物理的な幅に合わせてマイルドに抑制する */
+            html.size-large {
+                --font-scale: 1.12;
+            }
+            html.size-medium {
+                --font-scale: 1.06;
             }
 
             .admin-row {
