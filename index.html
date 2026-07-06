@@ -409,6 +409,16 @@
             gap: 45px;
         }
 
+        /* アプリフッター（右下の文字サイズ変更） */
+        .app-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end; /* 右寄せ */
+            align-items: center;
+        }
+
         .month-section {
             border: 1px solid var(--border-color);
             border-radius: 12px;
@@ -1004,12 +1014,6 @@
         <div class="facility-header-tag">特別養護老人ホーム ときわ苑</div>
         <h1 id="facility-name">ショートステイ 空き状況カレンダー</h1>
         <p class="subtitle">空き状況をひと目で確認</p>
-        <div class="size-selector-container">
-            <span class="size-label">文字サイズ:</span>
-            <button type="button" id="btn-size-small" class="btn-size" onclick="changeFontSize('small')">小</button>
-            <button type="button" id="btn-size-medium" class="btn-size active" onclick="changeFontSize('medium')">中</button>
-            <button type="button" id="btn-size-large" class="btn-size" onclick="changeFontSize('large')">大</button>
-        </div>
     </header>
 
     <!-- 折りたたみ可能なご利用案内（アコーディオン） -->
@@ -1063,6 +1067,15 @@
         <!-- JSで動的にカレンダーが挿入されます -->
     </div>
 
+    <!-- フッター領域（右下に文字サイズ変更ボタンを配置） -->
+    <footer class="app-footer">
+        <div class="size-selector-container">
+            <span class="size-label">文字サイズ:</span>
+            <button type="button" id="btn-size-small" class="btn-size" onclick="changeFontSize('small')">小</button>
+            <button type="button" id="btn-size-medium" class="btn-size active" onclick="changeFontSize('medium')">中</button>
+            <button type="button" id="btn-size-large" class="btn-size" onclick="changeFontSize('large')">大</button>
+        </div>
+    </footer>
 
 </div>
 
