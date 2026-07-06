@@ -157,49 +157,121 @@
             }
         }
 
-        /* 説明・凡例 */
+        /* ご利用案内のモダン化 */
         .info-panel {
-            background-color: #eff6ff;
-            border-left: 4px solid var(--primary-color);
-            padding: 20px;
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 24px;
             margin-bottom: 30px;
-            border-radius: 4px 12px 12px 4px;
-            font-size: 0.9rem;
+            border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-        }
-
-        .info-panel ul {
-            margin-left: 20px;
-            margin-top: 8px;
-        }
-
-        .info-panel li {
-            margin-bottom: 4px;
-        }
-
-        .legend {
             display: flex;
+            flex-direction: column;
             gap: 20px;
-            flex-wrap: wrap;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px dashed #dbeafe;
         }
 
-        .legend-item {
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .info-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
+            gap: 6px;
         }
 
-        .legend-badge {
-            padding: 4px 10px;
+        .info-step-text {
+            font-size: 0.85rem;
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+        
+        .info-step-text span {
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            font-size: 0.8rem;
+        }
+
+        .legend-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .legend-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .legend-row span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            height: 28px;
             border-radius: 6px;
             font-weight: bold;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             border: 1px solid transparent;
+        }
+        
+        .legend-row .badge-ok {
+            background-color: #ecfdf5;
+            color: #15803d;
+            border-color: #a7f3d0;
+        }
+        .legend-row .badge-warn {
+            background-color: #fff7ed;
+            color: #c2410c;
+            border-color: #fed7aa;
+        }
+        .legend-row .badge-ng {
+            background-color: #f1f5f9;
+            color: #94a3b8;
+            border-color: #cbd5e1;
+        }
+
+        .legend-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+        
+        .legend-desc strong {
+            color: var(--text-main);
+        }
+
+        /* 警告・注意書きバー */
+        .info-alert {
+            background-color: #fff1f2;
+            border: 1px solid #ffe4e6;
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .alert-icon {
+            font-size: 1.1rem;
+            line-height: 1.2;
+        }
+
+        .alert-text {
+            font-size: 0.8rem;
+            color: #be123c;
+            line-height: 1.5;
+            font-weight: 500;
         }
 
         /* カレンダー表示エリア */
@@ -619,17 +691,13 @@
             }
 
             .info-panel {
-                padding: 14px;
+                padding: 16px;
                 margin-bottom: 20px;
-                font-size: 0.85rem;
             }
 
-            .legend {
-                gap: 10px;
-            }
-
-            .legend-item {
-                font-size: 0.75rem;
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
             }
 
             .day-cell {
@@ -807,26 +875,32 @@
     </header>
 
     <div class="info-panel">
-        <strong>【ご利用案内】</strong>
-        <ul>
-            <li>空きがある日付のボタンをクリックすると、仮予約の申請画面が開きます。</li>
-            <li>「〇 空きあり」は、通常のお部屋に空きがある状態です。</li>
-            <li>「△ 空きあり (要相談)」は、調整が必要な空き状況です。特養入所者様が急遽退院された場合などは、ご利用いただけなくなる可能性がございますのであらかじめご了承ください。</li>
-            <li style="color: #be123c; font-weight: 700;">※本サイトでの申請はすべて「仮予約」となります。調整が整い、予約が確定しましたら、施設より「ショートメール」にて通知いたします。</li>
-        </ul>
-        <div class="legend">
-            <div class="legend-item">
-                <span class="legend-badge" style="background-color: var(--status-ok-bg); color: var(--status-ok-text); border: 1px solid var(--status-ok-border)">〇</span>
-                空きあり
+        <div class="info-grid">
+            <div class="info-step-box">
+                <div class="info-title">📅 予約のしかた</div>
+                <div class="info-step-text">空きがある日付の <span>〇</span> または <span>△</span> ボタンをクリックすると、仮予約の申請画面が開きます。</div>
             </div>
-            <div class="legend-item">
-                <span class="legend-badge" style="background-color: var(--status-warn-bg); color: var(--status-warn-text); border: 1px solid var(--status-warn-border)">△</span>
-                空きあり (要相談)
+            <div class="info-legend-box">
+                <div class="info-title">💡 記号の見かた</div>
+                <div class="legend-list">
+                    <div class="legend-row">
+                        <span class="badge-ok">〇</span>
+                        <div class="legend-desc"><strong>空きあり</strong>：通常のお部屋に空室があります。</div>
+                    </div>
+                    <div class="legend-row">
+                        <span class="badge-warn">△</span>
+                        <div class="legend-desc"><strong>要相談</strong>：調整枠。急な入院・退院等で空き状況が変動する場合があります。</div>
+                    </div>
+                    <div class="legend-row">
+                        <span class="badge-ng">✕</span>
+                        <div class="legend-desc"><strong>満床</strong>：お部屋の空きがありません。</div>
+                    </div>
+                </div>
             </div>
-            <div class="legend-item">
-                <span class="legend-badge" style="background-color: var(--status-ng-bg); color: var(--status-ng-text); border: 1px solid var(--status-ng-border)">✕</span>
-                空きなし
-            </div>
+        </div>
+        <div class="info-alert">
+            <span class="alert-icon">⚠️</span>
+            <div class="alert-text">本サイトでの申請はすべて<strong>「仮予約」</strong>となります。調整が整い、予約が確定しましたら、施設より<strong>「ショートメール」</strong>にて確定通知をお送りいたします。</div>
         </div>
     </div>
 
