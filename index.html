@@ -1365,21 +1365,26 @@
             // 空き状況の判定とボタン生成
             const statusInfo = getAvailabilityStatus(cellDateStr);
 
-            // 満床セルの背景パターン用のクラス
-            if (statusInfo.status === 'ng') {
+            // 昨日以前（過去）の場合は、ボタンを作らず、セルを斜め線にするだけにする
+            if (cellDateStr < todayStr) {
                 cell.classList.add('is-ng');
-            }
+            } else {
+                // 今日以降の場合のみ、満床判定およびボタンの生成・配置を行う
+                if (statusInfo.status === 'ng') {
+                    cell.classList.add('is-ng');
+                }
 
-            const statusBtn = document.createElement('button');
-            statusBtn.type = 'button';
-            statusBtn.className = `btn-status ${statusInfo.status}`;
-            statusBtn.innerHTML = `<span class="status-symbol">${statusInfo.symbol}</span><span class="status-subtext">${statusInfo.subtext}</span>`;
-            
-            if (statusInfo.status !== 'ng') {
-                statusBtn.onclick = () => openModal(cellDateStr, statusInfo.type);
+                const statusBtn = document.createElement('button');
+                statusBtn.type = 'button';
+                statusBtn.className = `btn-status ${statusInfo.status}`;
+                statusBtn.innerHTML = `<span class="status-symbol">${statusInfo.symbol}</span><span class="status-subtext">${statusInfo.subtext}</span>`;
+                
+                if (statusInfo.status !== 'ng') {
+                    statusBtn.onclick = () => openModal(cellDateStr, statusInfo.type);
+                }
+                
+                cell.appendChild(statusBtn);
             }
-            
-            cell.appendChild(statusBtn);
             grid.appendChild(cell);
         }
 
@@ -1400,12 +1405,12 @@
      * 指定された日付の空き状況（統合ボタンの表示）を判定して返す
      */
     function getAvailabilityStatus(dateStr) {
-        // 今日以前（過去）の日付は一律で満床（予約不可）として扱う
-        if (dateStr <= todayStr) {
+        // 昨日以前（過去）の日付は一律で満床（予約不可）として扱う
+        if (dateStr < todayStr) {
             return {
                 status: 'ng',
                 symbol: '✕',
-                subtext: '過去',
+                subtext: '',
                 type: ''
             };
         }
