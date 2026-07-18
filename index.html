@@ -1702,7 +1702,18 @@
         }
 
         const data = AVAILABILITY_DATA[dateStr];
-        const hospitalLimit = getHospitalLimit(); // 設定された入院枠追加枠数
+        
+        // 当日から2週間（14日後）までの間だけ入院枠（hospitalLimit）を適用する
+        let hospitalLimit = 0;
+        const parts = dateStr.split('-');
+        const checkDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        const todayParts = todayStr.split('-');
+        const todayDate = new Date(parseInt(todayParts[0], 10), parseInt(todayParts[1], 10) - 1, parseInt(todayParts[2], 10));
+        const diffTime = checkDate - todayDate;
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+        if (diffDays >= 0 && diffDays <= 14) {
+            hospitalLimit = getHospitalLimit();
+        }
         
         let regularVal = DEFAULT_REGULAR_LIMIT; // デフォルト残数：8
         if (data && data.regular !== undefined) {
@@ -1826,91 +1837,6 @@
         const modal = document.getElementById('reservation-modal');
         modal.classList.add('show');
     }
-
-    /**
-     * モーダルを閉じる
-     */
-    function closeModal() {
-        const modal = document.getElementById('reservation-modal');
-        modal.classList.remove('show');
-    }
-
-    /**
-     * 宿泊数・期間空き状況の計算と判定 (セレクトボックス連動)
-     */
-    function calculateNightsFromSelect() {
-        const startStr = activeReservation.date;
-        if (!startStr) return;
-
-        const select = document.getElementById('stay-nights');
-        const nights = parseInt(select.value, 10);
-        if (isNaN(nights)) return;
-
-        const days = nights + 1;
-        const nightsText = `${nights}泊${days}日`;
-
-        // 退所予定日の計算
-        const start = new Date(startStr);
-        const end = new Date(start);
-        end.setDate(start.getDate() + nights);
-
-        const yyyy = end.getFullYear();
-        const mm = String(end.getMonth() + 1).padStart(2, '0');
-        const dd = String(end.getDate()).padStart(2, '0');
-        const endDateStr = `${yyyy}-${mm}-${dd}`;
-        activeReservation.endDate = endDateStr; // メール送信時に利用
-
-        // 画面表示の更新
-        document.getElementById('end-date-display').textContent = `退所予定日：${yyyy}年${mm}月${dd}日`;
-
-        // 期間内の空き状況チェック（退所日当日まで ＝ nights + 1 日間）
-        let currentDate = new Date(start);
-        let hasNg = false;
-        let hasWarn = false;
-
-        for (let i = 0; i <= nights; i++) {
-            const loopY = currentDate.getFullYear();
-            const loopM = String(currentDate.getMonth() + 1).padStart(2, '0');
-            const loopD = String(currentDate.getDate()).padStart(2, '0');
-            const loopDateStr = `${loopY}-${loopM}-${loopD}`;
-
-            const statusInfo = getAvailabilityStatus(loopDateStr);
-            if (statusInfo.status === 'ng') {
-                hasNg = true;
-            } else if (statusInfo.status === 'warn') {
-                hasWarn = true;
-            }
-
-            // 次の日に進む
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
-
-        // 希望タイプの更新 (期間中に要相談の日が1日でもあれば要相談とする)
-        let overallType = '通常';
-        if (hasWarn) {
-            overallType = '要相談';
-        }
-        activeReservation.type = overallType;
-        document.getElementById('info-type').textContent = overallType;
-
-        // 警告エリアの制御
-        const warnNotice = document.getElementById('modal-warn-notice');
-        if (overallType === '要相談') {
-            warnNotice.style.display = 'inline';
-        } else {
-            warnNotice.style.display = 'none';
-        }
-
-        // 満床（空きなし）が含まれる場合の警告表示
-        const periodWarn = document.getElementById('period-warn-notice');
-        if (hasNg) {
-            periodWarn.style.display = 'block';
-        } else {
-            periodWarn.style.display = 'none';
-        }
-    }
-
-
 
     /**
      * モーダルを閉じる
