@@ -26,15 +26,15 @@
             
             /* 空き状況の色定義 (コントラストと視認性を重視) */
             --status-ok-bg: #ecfdf5;     /* さわやかな極薄グリーン */
-            --status-ok-text: #047857;   /* 深いエメラルド */
-            --status-ok-border: #a7f3d0;
+            --status-ok-text: #065f46;   /* くっきりしたエメラルドグリーン */
+            --status-ok-border: #6ee7b7;
             
-            --status-warn-bg: #fffbeb;   /* 温かみのあるイエローベージュ */
-            --status-warn-text: #c2410c; /* 視認性の高いダークオレンジ */
-            --status-warn-border: #fed7aa;
+            --status-warn-bg: #fff7ed;   /* 温かみのあるイエローベージュ */
+            --status-warn-text: #9a3412; /* くっきりしたダークオレンジ */
+            --status-warn-border: #fdba74;
             
             --status-ng-bg: #f1f5f9;     /* 落ち着いた薄いグレー */
-            --status-ng-text: #94a3b8;   /* マイルドなグレー */
+            --status-ng-text: #475569;   /* くっきりしたスレートグレー（かすみ防止のため濃く） */
             --status-ng-border: #cbd5e1;
 
             --font-family: 'Outfit', 'Inter', 'Noto Sans JP', sans-serif;
@@ -307,17 +307,17 @@
         
         .legend-row .badge-ok {
             background-color: #ecfdf5;
-            color: #15803d;
-            border-color: #a7f3d0;
+            color: #065f46;
+            border-color: #6ee7b7;
         }
         .legend-row .badge-warn {
             background-color: #fff7ed;
-            color: #c2410c;
-            border-color: #fed7aa;
+            color: #9a3412;
+            border-color: #fdba74;
         }
         .legend-row .badge-ng {
             background-color: #f1f5f9;
-            color: #94a3b8;
+            color: #475569;
             border-color: #cbd5e1;
         }
 
@@ -542,44 +542,45 @@
         }
 
         .status-symbol {
-            font-size: 1.25rem; /* 記号を大きく太く */
-            line-height: 1;
+            font-size: 1.3rem; /* 記号を大きく太く */
+            line-height: 1.1;
             font-family: inherit;
+            font-weight: 800;
         }
 
         .status-subtext {
-            font-size: 0.7rem; /* ステータスや残数 */
-            font-weight: 700;
-            letter-spacing: 0.5px;
+            font-size: 0.72rem; /* ステータスや残数 */
+            font-weight: 800;
+            letter-spacing: 0.2px;
             white-space: nowrap;
         }
 
-        /* ボタン状態別スタイル */
+        /* ボタン状態別スタイル (コントラスト・視認性強化) */
         .btn-status.ok {
             background-color: #ecfdf5;
-            color: #15803d;
-            border-color: #a7f3d0;
+            color: #065f46;
+            border-color: #6ee7b7;
         }
         .btn-status.ok:hover {
             background-color: #d1fae5;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px 0 rgba(21, 128, 61, 0.15);
+            box-shadow: 0 4px 12px 0 rgba(6, 95, 70, 0.15);
         }
 
         .btn-status.warn {
             background-color: #fff7ed;
-            color: #c2410c;
-            border-color: #fed7aa;
+            color: #9a3412;
+            border-color: #fdba74;
         }
         .btn-status.warn:hover {
             background-color: #ffedd5;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px 0 rgba(194, 65, 12, 0.15);
+            box-shadow: 0 4px 12px 0 rgba(154, 52, 18, 0.15);
         }
 
         .btn-status.ng {
             background-color: #f1f5f9;
-            color: #94a3b8;
+            color: #475569;
             border-color: #cbd5e1;
             cursor: not-allowed;
             pointer-events: none; /* クリック不可 */
@@ -1163,7 +1164,7 @@
             <div class="checkbox-container">
                 <label class="checkbox-label" for="existing-user-confirm">
                     <input type="checkbox" id="existing-user-confirm" class="checkbox-input" required>
-                    <span>既存の利用者であり、ケアプランに位置づけがあります（※新規不可）<span class="required">※必須</span></span>
+                    <span>既存の利用者であり、ケアプランに位置づけがあります（※新規不可）</span>
                 </label>
             </div>
 
