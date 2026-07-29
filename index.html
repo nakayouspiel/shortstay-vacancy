@@ -1156,9 +1156,8 @@
                 <input type="text" id="user-name" class="form-control" placeholder="例：鈴木 一郎" required>
             </div>
 
-            <div class="notice">
-                ※本システムは、すでにケアプランに位置付けがある既存の利用者様専用です。新規はお受けできません。
-                <span id="modal-warn-notice" style="display: none; color: #be123c;"><br>※「要相談」の日程は、特養入所者様の退院状況などによってご利用いただけなくなる場合がございます。あらかじめご了承ください。</span>
+            <div id="modal-warn-notice" class="notice" style="display: none;">
+                ※「要相談」の日程は、特養入所者様の退院状況などによってご利用いただけなくなる場合がございます。あらかじめご了承ください。
             </div>
 
             <div class="checkbox-container">
@@ -1966,7 +1965,7 @@
         // 警告エリアの制御
         const warnNotice = document.getElementById('modal-warn-notice');
         if (overallType === '要相談') {
-            warnNotice.style.display = 'inline';
+            warnNotice.style.display = 'block';
         } else {
             warnNotice.style.display = 'none';
         }
