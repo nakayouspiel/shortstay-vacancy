@@ -691,6 +691,42 @@
             font-weight: 700;
         }
 
+        /* 必須確認チェックボックスのスタイル */
+        .checkbox-container {
+            background-color: #eff6ff;
+            border: 1.5px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 20px;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+
+        .checkbox-container:hover {
+            background-color: #dbeafe;
+            border-color: var(--primary-color);
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.5;
+            margin-bottom: 0 !important;
+        }
+
+        .checkbox-input {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+            flex-shrink: 0;
+        }
+
         /* ボタンエリア */
         .modal-footer {
             display: flex;
@@ -1123,6 +1159,13 @@
             <div class="notice">
                 ※本システムは、すでにケアプランに位置付けがある既存の利用者様専用です。新規はお受けできません。
                 <span id="modal-warn-notice" style="display: none; color: #be123c;"><br>※「要相談」の日程は、特養入所者様の退院状況などによってご利用いただけなくなる場合がございます。あらかじめご了承ください。</span>
+            </div>
+
+            <div class="checkbox-container">
+                <label class="checkbox-label" for="existing-user-confirm">
+                    <input type="checkbox" id="existing-user-confirm" class="checkbox-input" required>
+                    <span>既存の利用者であり、ケアプランに位置づけがあります（※新規不可）<span class="required">※必須</span></span>
+                </label>
             </div>
 
             <div class="modal-footer">
@@ -1701,16 +1744,28 @@
             };
         }
 
-        const data = AVAILABILITY_DATA[dateStr];
-        
-        // 当日から2週間（14日後）までの間だけ入院枠（hospitalLimit）を適用する
-        let hospitalLimit = 0;
+        // 日数差の計算
         const parts = dateStr.split('-');
         const checkDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
         const todayParts = todayStr.split('-');
         const todayDate = new Date(parseInt(todayParts[0], 10), parseInt(todayParts[1], 10) - 1, parseInt(todayParts[2], 10));
         const diffTime = checkDate - todayDate;
         const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+        // 直近10日間（本日〜10日後まで）を強制的に「満床（✕）」扱いにする
+        if (diffDays >= 0 && diffDays <= 10) {
+            return {
+                status: 'ng',
+                symbol: '✕',
+                subtext: '満床',
+                type: ''
+            };
+        }
+
+        const data = AVAILABILITY_DATA[dateStr];
+        
+        // 当日から2週間（14日後）までの間だけ入院枠（hospitalLimit）を適用する
+        let hospitalLimit = 0;
         if (diffDays >= 0 && diffDays <= 14) {
             hospitalLimit = getHospitalLimit();
         }
@@ -1766,6 +1821,10 @@
 
         // 利用者名欄は毎回クリア、事業所名・ケアマネ名は前回の入力を残す仕様
         document.getElementById('user-name').value = '';
+        const confirmCheck = document.getElementById('existing-user-confirm');
+        if (confirmCheck) {
+            confirmCheck.checked = false;
+        }
 
         // 空き状況とカレンダー上限を読み取り、宿泊期間（ドロップダウン）の選択肢を動的に生成する
         const select = document.getElementById('stay-nights');
@@ -1931,8 +1990,9 @@
         const cmName = document.getElementById('cm-name').value.trim();
         const userName = document.getElementById('user-name').value.trim();
 
-        if (!officeName || !cmName || !userName) {
-            alert('すべての必須項目を入力してください。');
+        const confirmCheck = document.getElementById('existing-user-confirm');
+        if (!officeName || !cmName || !userName || (confirmCheck && !confirmCheck.checked)) {
+            alert('すべての必須項目を入力し、確認チェックを行ってください。');
             return;
         }
 
