@@ -521,8 +521,15 @@
             box-shadow: none; /* 満床セルはホバー枠線をださない */
         }
 
-        /* 通常・入院統合ボタン */
+        /* 通常・入院統合ボタン (スマホ・iOSのボタン透過・半透明化防止策) */
         .btn-status {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            -webkit-text-fill-color: currentColor !important;
+            opacity: 1 !important;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
             width: 100%;
             display: flex;
             flex-direction: column; /* 上下に配置する */
@@ -894,19 +901,26 @@
             }
 
             .btn-status {
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+                -webkit-text-fill-color: currentColor !important;
+                opacity: 1 !important;
                 padding: 3px 0px; /* 左右パディングを0にして文字崩れ・はみ出しを防ぐ */
-                font-size: 0.7rem;
+                font-size: 0.75rem;
                 border-radius: 5px;
                 min-height: 38px; /* ボタン最小高さを少し拡大 */
                 gap: 0px;
             }
 
             .btn-status .status-symbol {
-                font-size: 1.15rem; /* 記号サイズをさらに大きくして見やすく */
+                font-size: 1.2rem; /* 記号サイズをさらに大きくして見やすく */
+                font-weight: 900;
             }
 
             .btn-status .status-subtext {
-                font-size: 0.62rem; /* 文字サイズ拡大に合わせて少し大きく */
+                font-size: 0.68rem; /* 文字サイズ拡大に合わせて少し大きく */
+                font-weight: 800;
                 letter-spacing: -0.3px; /* 少し詰め気味にしてはみ出しを防ぐ */
             }
 
