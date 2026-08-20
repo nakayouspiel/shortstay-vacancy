@@ -1868,9 +1868,9 @@
 
         const data = AVAILABILITY_DATA[dateStr];
         
-        // 当日から2週間（14日後）までの間だけ入院枠（hospitalLimit）を適用する
+        // 強制満床10日間 + 要相談1週間(7日間) = 17日後までの間だけ入院枠（hospitalLimit）を適用する
         let hospitalLimit = 0;
-        if (diffDays >= 0 && diffDays <= 14) {
+        if (diffDays >= 0 && diffDays <= 17) {
             hospitalLimit = getHospitalLimit();
         }
         
